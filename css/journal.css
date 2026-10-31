@@ -1,0 +1,273 @@
+/* ============================================================
+   Uju Duru — journal portfolio
+   Top-bound sketchbook. Sheets rotate about their top edge.
+   ============================================================ */
+
+:root {
+  --cover:      #DCA4A4;   /* deep mauve cover, from the design */
+  --cover-edge: #C98E8E;
+  --page:       #FDF5F3;   /* inside sheets */
+  --page-2:     #F3E3DE;   /* sheets further down the stack */
+  --desk:       #F3DEDA;   /* surface the book lies on */
+  --ink:        #634343;
+  --ink-soft:   #8A6A66;
+  --dot:        rgba(220, 164, 164, 0.55);
+  /* Band height must be a real length for the dot grid to stay continuous
+     across the bend, so the page height is a token rather than inline. */
+  --page-h:     min(560px, 68vh);
+  --bands:      6;
+  /* --band-h is the measured band height in px, set by main.js. It exists only
+     so the dot grid can be phase-shifted per band and read as one sheet. */
+  --coil:       #8FB8E0;
+  --coil-dk:    #5E8CBC;
+
+  --font-hand: 'Caveat', 'Kalam', cursive;
+  --font-body: 'Inter', system-ui, sans-serif;
+
+  --flip-ms: 820ms;
+  --flip-ease: cubic-bezier(.33, 0, .18, 1);
+}
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--desk);
+  color: var(--ink);
+  font-family: var(--font-body);
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+}
+.defs { position: absolute; width: 0; height: 0; }
+
+/* ---------- masthead ---------- */
+.masthead {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: clamp(1rem, 2.5vw, 2rem) clamp(1.25rem, 4vw, 3rem) 0;
+  position: relative; z-index: 60;
+}
+.wordmark {
+  font-family: var(--font-hand); font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+  line-height: .86; color: var(--ink); text-decoration: none;
+}
+.nav ul { list-style: none; display: flex; gap: clamp(.8rem, 2vw, 2rem); margin: 0; padding: 0; }
+.nav a {
+  font-family: var(--font-hand); font-size: clamp(1rem, 1.5vw, 1.35rem);
+  color: var(--ink); text-decoration: none; opacity: .72;
+  border-bottom: 2px solid transparent; padding-bottom: 2px;
+}
+.nav a:hover, .nav a[aria-current="page"] { opacity: 1; border-bottom-color: var(--cover-edge); }
+
+/* ============================================================
+   3D stage
+   ============================================================ */
+.journal-viewport {
+  position: relative;
+  width: min(950px, 92vw);
+  height: var(--page-h);
+  margin: auto;
+  /* The free edge swings ~560px toward the camera, so magnification there is
+     P/(P-560). 1250 gave ~2x and the page engulfed the header; 1700 gives a
+     ~1.5x loom — enough to feel the page pass your eye, not enough to shout. */
+  perspective: 1700px;
+  /* The vanishing point must NOT sit on the hinge. With it at 50% 0% every
+     point scaled about the pivot and the turn read as a vertical squash. */
+  perspective-origin: 50% 30%;
+}
+.journal-book {
+  position: absolute; inset: 0;
+  transform-style: preserve-3d;
+}
+
+/* ---------- a sheet ----------
+   Two elements do two jobs, deliberately:
+     .sheet          carries the FLIP transform (set by JS)
+     .sheet__flutter carries the HOVER transform
+   The boilerplate put both on one element, so hovering replaced the flip
+   transform outright and the page snapped. Separating them lets the two
+   animations compose instead of fight. */
+.sheet {
+  position: absolute; inset: 0;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.sheet__flutter {
+  position: absolute; inset: 0;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  transition: transform 260ms ease-out;
+}
+
+/* Two real faces, so the back of the page exists. A single div with
+   backface-visibility:hidden simply vanishes at 90deg — fine for a dissolve,
+   wrong for a sketchbook. */
+.face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  border-radius: 3px 3px 12px 12px;
+  box-shadow: 0 2px 2px rgba(99,67,67,.08), 0 16px 34px rgba(99,67,67,.16);
+}
+.face--back { transform: rotateX(180deg); }
+
+/* A turning page loses the light. Registering the property is what lets it
+   interpolate instead of snapping between keyframes. */
+@property --shade { syntax: '<number>'; inherits: true; initial-value: 0; }
+.face::before {
+  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none;
+  background: rgba(70, 42, 42, var(--shade, 0));
+}
+
+/* ---------- paper, as a chain of hinged bands ----------
+   No single element can bend, so the paper is six bands, each hinged at the
+   bottom of the one above. Compounding their rotations approximates a curve.
+   Only the PAPER is sliced: the content rides over it as one flat layer, so
+   text stays crisp, selectable and free of seams.
+
+   Nothing in this chain may carry filter, mix-blend-mode, opacity<1, clip-path
+   or overflow — every one of those forces transform-style back to flat and
+   collapses the bend. The grain and the clipping live on .face__flat instead. */
+@property --curl { syntax: '<number>'; inherits: true; initial-value: 0; }
+
+.bend { position: absolute; inset: 0; transform-style: preserve-3d; }
+.band {
+  position: absolute; left: 0; right: 0;
+  transform-origin: top center;
+  transform-style: preserve-3d;
+  /* Each band is its own polygon now, and backface-visibility on .face does
+     NOT cull children inside a preserve-3d context — without this the back
+     face's bands render straight through the front of the page. */
+  backface-visibility: hidden;
+  transform: rotateX(calc(var(--curl, 0) * var(--w) * 1deg));
+  color: var(--cover);
+  background-color: currentColor;
+  /* Band heights are fractional (93.33px at 1440x900), so each boundary left a
+     1px gap that the sheet below showed through. A 1px bleed in the band's own
+     colour closes it without changing any band's height, which an overlap
+     would have accumulated down the chain. */
+  box-shadow: 0 2px 0 0 currentColor;
+}
+.band--last { box-shadow: none; }
+.bend > .band  { top: 0; height: calc(100% / var(--bands)); border-radius: 3px 3px 0 0; }
+.band > .band  { top: 100%; height: 100%; }   /* each band is one slice tall */
+.band--last    { border-radius: 0 0 12px 12px; }
+
+/* dot grid, offset per band so it reads as one continuous sheet */
+.bend--inner .band {
+  color: var(--page);
+  background-image: radial-gradient(var(--dot) 1px, transparent 0);
+  background-size: 16px 16px;
+  background-position: 0 calc(-1 * var(--i) * var(--band-h));
+}
+/* No grain layer. #paper-grain emits pure turbulence with no feComposite back
+   to SourceGraphic, so on a band it painted an opaque wash instead of a
+   texture, and its filter region spilled past the page edge now that .face no
+   longer clips. Sixty filtered pseudo-elements was the wrong price for it
+   anyway. The dot grid carries the paper texture; if grain comes back it
+   should be a baked noise image, which composites without a filter. */
+/* A curved surface loses light the further it tips out of the page plane.
+   This interpolates from the tone at the band's top (--d0) to the tone at its
+   bottom (--d), so the six bands meet with no step and read as one shadow. A
+   flat fill per band gave six discrete tonal rectangles once curl rose. */
+.band::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg,
+    rgba(70, 42, 42, calc(var(--curl, 0) * var(--d0) * 0.009)),
+    rgba(70, 42, 42, calc(var(--curl, 0) * var(--d)  * 0.009)));
+  pointer-events: none;
+}
+
+/* The shadow the coils throw across the top of the page. It lives on the top
+   BAND, not on .face — as a child of .face it was a rectangle, and once it had
+   to be pushed forward to clear the curling bands it detached from the paper
+   and floated up to ~79px in front of it. On the band it curves with the paper
+   and needs no --curl tracking at all. */
+.bend > .band::before {
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 60%;
+  background: linear-gradient(180deg, rgba(99,67,67,.16), transparent);
+  pointer-events: none;
+}
+
+/* ---------- the flat layer ----------
+   Clipping and the grain filter both flatten whatever carries them, so they
+   live here, over the bend, where flat is exactly what we want. */
+.face__flat {
+  position: absolute; inset: 0;
+  overflow: hidden;
+  border-radius: 3px 3px 12px 12px;
+  backface-visibility: hidden;
+  /* The content is flat, but the bands it sits on swing forward as they curl
+     (~5.5px per degree of bend at the free edge), so a fixed offset let them
+     sweep in front and swallow the text. Tracking --curl keeps the content
+     ahead of the paper at every point in the bend. The magnification this
+     costs is ~2% at hover, which is why the curl is kept modest. */
+  transform: translateZ(calc(.5px + var(--curl, 0) * 5.5px));
+}
+
+
+/* ---------- content ---------- */
+.content { position: relative; z-index: 2; padding: clamp(3.5rem, 7vh, 5.5rem) clamp(2rem, 5vw, 4rem); }
+.display { font-family: var(--font-hand); font-size: clamp(2.4rem, 5.5vw, 4rem); line-height: .9; margin: 0; }
+.kicker  { font-family: var(--font-body); font-size: .95rem; letter-spacing: .04em; color: var(--ink-soft); margin: .6rem 0 0; }
+.lede    { max-width: 46ch; color: var(--ink-soft); line-height: 1.65; }
+.cover-art { position: absolute; right: clamp(1rem,4vw,3rem); bottom: 0; height: 76%; }
+/* the cover carries About Me, so its copy has to clear the illustration */
+.content--cover .lede { max-width: 24ch; margin-top: 1.4rem; }
+
+/* ---------- flutter ----------
+   A loose sheet does not oscillate evenly; it eases at the top of its travel.
+   Three keyframes with uneven timing read as tension rather than a metronome. */
+.flutter-zone {
+  position: absolute; bottom: 0; left: 0; width: 100%; height: 56px;
+  border: 0; background: transparent; cursor: pointer; z-index: 5;
+}
+.sheet:not(.is-flipped) .flutter-zone:hover ~ .sheet__flutter,
+.sheet:not(.is-flipped):hover .sheet__flutter {
+  animation: flutter 1.6s ease-in-out infinite;
+}
+@keyframes flutter {
+  /* Positive rotateX, same as the turn: the free edge has to come TOWARD the
+     viewer. Negative sent it backwards, where perspective foreshortened it and
+     the lift read as the page simply getting shorter. The skewX is gone too —
+     a 2D shear on a page that is genuinely in perspective fights the 3D. */
+  0%   { transform: rotateX(0deg); --curl: 0; }
+  38%  { transform: rotateX(6deg); --curl: 6; }
+  62%  { transform: rotateX(7deg); --curl: 7; }
+  100% { transform: rotateX(0deg); --curl: 0; }
+}
+
+/* ---------- the flip ----------
+   Angles and timing live in bookEngine; the class is only a hover guard. */
+
+/* ---------- spiral ----------
+   Two layers with the stack between them. One layer can only ever look like
+   wire lying on the paper; the sheet has to interrupt the coil twice. */
+.spine {
+  position: absolute; top: -34px; left: 0; right: 0; height: 110px;
+  pointer-events: none;
+}
+.spine--front { z-index: 50; }
+.spine svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- hint ---------- */
+.hint {
+  text-align: center; color: var(--ink-soft); font-size: .85rem;
+  margin: 0 0 clamp(.75rem, 2vh, 1.5rem);
+}
+kbd {
+  font: inherit; border: 1px solid rgba(99,67,67,.3); border-bottom-width: 2px;
+  border-radius: 4px; padding: 0 .35em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet, .sheet__flutter { transition-duration: 1ms; }
+  .sheet:hover .sheet__flutter { animation: none; }
+}
+@media (max-width: 700px) {
+  .masthead { flex-direction: column; gap: .5rem; }
+  .nav ul { flex-wrap: wrap; }
+  .journal-viewport { height: min(520px, 60vh); }
+  .cover-art { height: 58%; opacity: .9; }
+}

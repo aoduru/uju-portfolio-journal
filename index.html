@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uju Duru — Portfolio</title>
+
+<!-- NOTE: the host is fonts.googleapis.com / fonts.gstatic.com. The boilerplate
+     had googleapis.com, which silently fails and falls back to system cursive. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@700&family=Inter:wght@400;500;600&display=swap">
+
+<link rel="stylesheet" href="css/journal.css">
+</head>
+<body>
+
+<!-- ============================================================
+     Filters. These are applied to SVG DECORATION ONLY — never to
+     a sheet that moves. See the note in journal.css.
+
+     color-interpolation-filters="sRGB" is load-bearing. SVG defaults it to
+     linearRGB, and transparent pixels do not survive that premultiplied-alpha
+     round trip cleanly — they return faintly opaque, painting each filter
+     region as a visible box behind every ring.
+     ============================================================ -->
+<svg class="defs" aria-hidden="true">
+  <defs>
+    <filter id="wobble-fine" x="-20%" y="-20%" width="140%" height="140%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.045" numOctaves="3" seed="3" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="wobble-mid" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="11" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="wobble-loose" x="-25%" y="-25%" width="150%" height="150%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="23" result="n"/>
+      <feDisplacementMap in="SourceGraphic" in2="n" scale="6.5" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+    <filter id="paper-grain">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer><feFuncA type="linear" slope="0.5"/></feComponentTransfer>
+    </filter>
+  </defs>
+</svg>
+
+<header class="masthead">
+  <a class="wordmark" href="#about">Uju<br>Duru</a>
+  <nav class="nav" aria-label="Sections">
+    <ul>
+      <li><a href="#about"        data-goto="about">About Me</a></li>
+      <li><a href="#case-studies" data-goto="case-studies">Case Studies</a></li>
+      <li><a href="#experience"   data-goto="experience">Experience</a></li>
+      <li><a href="#art"          data-goto="art">Art</a></li>
+      <li><a href="#resume"       data-goto="resume">Resume</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main class="journal-viewport">
+  <!-- coils that pass BEHIND the stack -->
+
+  <div class="journal-book" id="book">
+    <!-- Sheets are written front-to-back. bookEngine assigns depth and order. -->
+
+    <article class="sheet sheet--cover" data-page="about" aria-label="Cover — About Me">
+      <div class="sheet__flutter">
+        <div class="face face--front">
+          <div class="paper"></div>
+          <div class="content content--cover">
+            <h1 class="display">Uju<br>Duru</h1>
+            <p class="kicker">UX &amp; Design Engineer</p>
+            <p class="lede">Nigeria to America at twelve; cognitive science and code since.</p>
+            <img class="cover-art" src="assets/me-in-bubble.png" alt="Uju, sitting cross-legged and reading">
+          </div>
+        </div>
+        <div class="face face--back"><div class="paper paper--inner"></div></div>
+      </div>
+      <button class="flutter-zone" type="button" aria-label="Turn to Case Studies"></button>
+    </article>
+
+    <article class="sheet" data-page="case-studies" aria-label="Case Studies">
+      <div class="sheet__flutter">
+        <div class="face face--front">
+          <div class="paper paper--inner"></div>
+          <div class="content">
+            <h2 class="display">Case Studies</h2>
+            <p class="lede">Three projects, each with the decision that mattered.</p>
+          </div>
+        </div>
+        <div class="face face--back"><div class="paper paper--inner"></div></div>
+      </div>
+      <button class="flutter-zone" type="button" aria-label="Turn to Experience"></button>
+    </article>
+
+    <article class="sheet" data-page="experience" aria-label="Experience">
+      <div class="sheet__flutter">
+        <div class="face face--front">
+          <div class="paper paper--inner"></div>
+          <div class="content">
+            <h2 class="display">Experience</h2>
+            <p class="lede">Where the engineering rigour comes from.</p>
+          </div>
+        </div>
+        <div class="face face--back"><div class="paper paper--inner"></div></div>
+      </div>
+      <button class="flutter-zone" type="button" aria-label="Turn to Art"></button>
+    </article>
+
+    <article class="sheet" data-page="art" aria-label="Art">
+      <div class="sheet__flutter">
+        <div class="face face--front">
+          <div class="paper paper--inner"></div>
+          <div class="content">
+            <h2 class="display">Art</h2>
+            <p class="lede">Eighteen pieces, and counting.</p>
+          </div>
+        </div>
+        <div class="face face--back"><div class="paper paper--inner"></div></div>
+      </div>
+      <button class="flutter-zone" type="button" aria-label="Turn to Resume"></button>
+    </article>
+
+    <article class="sheet" data-page="resume" aria-label="Resume">
+      <div class="sheet__flutter">
+        <div class="face face--front">
+          <div class="paper paper--inner"></div>
+          <div class="content">
+            <h2 class="display">Resume</h2>
+            <p class="lede">The one-page version.</p>
+          </div>
+        </div>
+        <div class="face face--back"><div class="paper paper--inner"></div></div>
+      </div>
+    </article>
+  </div>
+
+  <!-- coils that pass IN FRONT of the stack -->
+  <div class="spine spine--front" aria-hidden="true"></div>
+</main>
+
+<p class="hint" id="hint">Lift the bottom edge, or use the nav. <kbd>←</kbd> <kbd>→</kbd> also work.</p>
+
+<script src="js/bookEngine.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
