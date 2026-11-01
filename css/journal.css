@@ -21,8 +21,12 @@
   --coil:       #8FB8E0;
   --coil-dk:    #5E8CBC;
 
-  --font-hand: 'Caveat', 'Kalam', cursive;
-  --font-body: 'Inter', system-ui, sans-serif;
+  /* --font-hand is the NAME only: the wordmark and the cover's h1. Everything
+     else that used to be handwritten — nav, section titles — is --font-display,
+     which is what keeps the site from reading childish. */
+  --font-hand:    'Caveat', 'Kalam', cursive;
+  --font-display: 'Albert Sans', system-ui, sans-serif;
+  --font-body:    'Inter', system-ui, sans-serif;
 
   --flip-ms: 820ms;
   --flip-ease: cubic-bezier(.33, 0, .18, 1);
@@ -53,7 +57,8 @@ body {
 }
 .nav ul { list-style: none; display: flex; gap: clamp(.8rem, 2vw, 2rem); margin: 0; padding: 0; }
 .nav a {
-  font-family: var(--font-hand); font-size: clamp(1rem, 1.5vw, 1.35rem);
+  font-family: var(--font-display); font-weight: 500;
+  font-size: clamp(.9rem, 1.2vw, 1.05rem); letter-spacing: .005em;
   color: var(--ink); text-decoration: none; opacity: .72;
   border-bottom: 2px solid transparent; padding-bottom: 2px;
 }
@@ -209,8 +214,12 @@ body {
 
 /* ---------- content ---------- */
 .content { position: relative; z-index: 2; padding: clamp(3.5rem, 7vh, 5.5rem) clamp(2rem, 5vw, 4rem); }
-.display { font-family: var(--font-hand); font-size: clamp(2.4rem, 5.5vw, 4rem); line-height: .9; margin: 0; }
-.kicker  { font-family: var(--font-body); font-size: .95rem; letter-spacing: .04em; color: var(--ink-soft); margin: .6rem 0 0; }
+/* Section titles are set, not written — only the name stays handwritten, and
+   it is an h1 on the cover alone. The sans needs a tighter line than the
+   script did, hence the two line-heights. */
+.display { font-family: var(--font-display); font-weight: 600; font-size: clamp(2.1rem, 4.8vw, 3.4rem); line-height: 1.02; letter-spacing: -.015em; margin: 0; }
+h1.display { font-family: var(--font-hand); font-weight: 400; font-size: clamp(2.4rem, 5.5vw, 4rem); line-height: .9; letter-spacing: 0; }
+.kicker  { font-family: var(--font-display); font-weight: 500; font-size: .95rem; letter-spacing: .03em; color: var(--ink-soft); margin: .6rem 0 0; }
 .lede    { max-width: 46ch; color: var(--ink-soft); line-height: 1.65; }
 .cover-art { position: absolute; right: clamp(1rem,4vw,3rem); bottom: 0; height: 76%; }
 /* the cover carries About Me, so its copy has to clear the illustration */
