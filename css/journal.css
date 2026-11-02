@@ -229,12 +229,49 @@ h1.display { font-family: var(--font-hand); font-weight: 400; font-size: clamp(1
    A loose sheet does not oscillate evenly; it eases at the top of its travel.
    Three keyframes with uneven timing read as tension rather than a metronome. */
 .flutter-zone {
-  position: absolute; bottom: 0; left: 0; width: 100%; height: 56px;
-  border: 0; background: transparent; cursor: pointer; z-index: 5;
+  position: absolute; bottom: 0; left: 0; width: 100%; height: 72px;
+  border: 0; background: transparent;
+  /* grab, not pointer: the gesture is lifting a page, not pressing a button.
+     No z-index here -- .sheet is preserve-3d, where z-index is ignored and
+     depth decides both paint order and hit testing. See .face__flat below. */
+  cursor: grab;
 }
-.sheet:not(.is-flipped) .flutter-zone:hover ~ .sheet__flutter,
-.sheet:not(.is-flipped):hover .sheet__flutter {
+.flutter-zone:active { cursor: grabbing; }
+.flutter-zone:focus-visible {
+  outline: 2px solid var(--cover-edge); outline-offset: -5px;
+  border-radius: 0 0 12px 12px;
+}
+
+/* The content layer sits at translateZ(.5px). Inside preserve-3d that half
+   pixel beat the lift strip's z-index:5 outright, so every click aimed at the
+   strip landed on the text or the cover art instead -- the strip was the top
+   element at 2 of 441 probed points. The .5px is load-bearing (it keeps the
+   curling bands off the text), so the fix is to stop the layer taking the
+   pointer at all and let real controls opt back in. */
+.face__flat { pointer-events: none; }
+.face__flat :is(a, button, input, select, textarea, [tabindex]) { pointer-events: auto; }
+
+/* Only the strip flutters now. The old rule fired from anywhere on the sheet,
+   which promised the whole page was interactive when it never was.
+   :has() rather than a sibling combinator -- the button follows .sheet__flutter
+   in the DOM, so `~` could never have matched it either way. */
+.sheet:not(.is-flipped):has(.flutter-zone:hover) .sheet__flutter,
+.sheet:not(.is-flipped):has(.flutter-zone:focus-visible) .sheet__flutter {
   animation: flutter 1.6s ease-in-out infinite;
+}
+
+/* Lift cue: a soft shadow along the bottom edge so the strip reads as grabbable
+   before you hover it. No translateZ -- the last element given one here
+   detached from the paper and floated in front of it. */
+.sheet:not(.is-flipped) .face--front::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 72px;
+  background: linear-gradient(180deg, transparent, rgba(99, 67, 67, .13));
+  border-radius: 0 0 12px 12px; pointer-events: none;
+  opacity: .62; transition: opacity 220ms ease-out;
+}
+.sheet:not(.is-flipped):has(.flutter-zone:hover) .face--front::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .sheet:not(.is-flipped):has(.flutter-zone:hover) .sheet__flutter { animation: none; }
 }
 @keyframes flutter {
   /* Positive rotateX, same as the turn: the free edge has to come TOWARD the
