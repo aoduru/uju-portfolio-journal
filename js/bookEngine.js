@@ -28,30 +28,56 @@
 
   /* One page turning. Three keyframes, because a transition can only run
      straight between two transforms — the middle frame is what lets the edge
-     arc out over the pile instead of scything through it. */
+     arc out over the pile instead of scything through it.
+
+     Two animations, and they must not be merged back into one. A keyframe list
+     that mixes transform with a custom property cannot go to the compositor, so
+     the whole turn falls to the main thread — and the page's text, which the
+     perspective magnifies by up to 22% as it swings away from the hinge, is then
+     re-rasterised every frame instead of scaled by the GPU. That was the jitter
+     on phones: shimmering text for the length of a flip, crisp the moment it
+     settled. Keep the transform list to transform alone. */
   BookEngine.prototype._turn = function (sheet, toTurned, z, order) {
     var base = 'translate3d(0,0,' + z + 'px) ';
     var apex = 'translate3d(0,0,' + (z + LIFT_Z) + 'px) ';
-    var flat = { transform: base + 'rotateX(0deg)',          '--shade': 0,    '--curl': 0 };
-    var over = { transform: base + 'rotateX(' + TURN + 'deg)', '--shade': 0,    '--curl': 0 };
-    var peak = { transform: apex + 'rotateX(' + MID + 'deg)',  '--shade': 0.34, '--curl': 14,
-                 offset: toTurned ? 0.64 : 0.36 };
+    var mid  = toTurned ? 0.64 : 0.36;
+
+    /* Shared by both animations. If these ever drift apart the paper bends out
+       of phase with the swing, so they are written once. */
+    var timing = {
+      duration: this.flipMs,
+      delay: order * this.stagger,
+      easing: 'linear',
+      fill: 'backwards'
+    };
 
     /* Easing goes on the KEYFRAMES, not the effect. With one curve across the
        whole turn the page cleared the frame in the first third and the rest of
        the duration was dead air — which is what made it feel like a cut rather
        than a turn. Linear overall means the offsets map straight to time, so
        nearly two thirds of it is now spent where the page is actually on
-       screen: slow to lift against gravity, quick once it goes over. */
-    flat.easing = over.easing = 'cubic-bezier(.42,0,.72,.4)';
-    peak.easing = 'cubic-bezier(.3,.66,.4,1)';
+       screen: slow to lift against gravity, quick once it goes over.
+       Both lists get the same two curves at the same two offsets. */
+    var SWING = 'cubic-bezier(.42,0,.72,.4)';
+    var OVER  = 'cubic-bezier(.3,.66,.4,1)';
 
-    sheet.animate(toTurned ? [flat, peak, over] : [over, peak, flat], {
-      duration: this.flipMs,
-      delay: order * this.stagger,
-      easing: 'linear',
-      fill: 'backwards'
-    });
+    // 1. The rotation. Compositable: transform and nothing else.
+    var flat = { transform: base + 'rotateX(0deg)',            easing: SWING };
+    var peak = { transform: apex + 'rotateX(' + MID + 'deg)',  easing: OVER, offset: mid };
+    var over = { transform: base + 'rotateX(' + TURN + 'deg)', easing: SWING };
+    sheet.animate(toTurned ? [flat, peak, over] : [over, peak, flat], timing);
+
+    /* 2. The bend and the shading. Paint only, so it stays on the main thread,
+       but it no longer drives anything the text's position depends on — a
+       dropped frame here dulls the shading for 16ms and moves no glyphs.
+       It goes on .sheet__flutter because that is the nearest ancestor of all
+       four readers of these properties (.face::before, .band, .band::after and
+       .face__flat), so inheritance is exactly what it was on .sheet. */
+    var wrap = sheet.querySelector('.sheet__flutter');
+    if (!wrap) return;
+    var rest = { '--shade': 0,    '--curl': 0,  easing: SWING };
+    var bent = { '--shade': 0.34, '--curl': 14, easing: OVER, offset: mid };
+    wrap.animate([rest, bent, rest], timing);
   };
 
   /* Depth. Every sheet sits a little above the one below so the stack has
