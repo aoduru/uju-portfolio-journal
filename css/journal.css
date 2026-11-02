@@ -248,8 +248,15 @@ h1.display { font-family: var(--font-hand); font-weight: 400; font-size: clamp(1
    element at 2 of 441 probed points. The .5px is load-bearing (it keeps the
    curling bands off the text), so the fix is to stop the layer taking the
    pointer at all and let real controls opt back in. */
-.face__flat { pointer-events: none; }
-.face__flat :is(a, button, input, select, textarea, [tabindex]) { pointer-events: auto; }
+/* Everything inside the flutter MOVES, so anything in here that takes the
+   pointer makes the hit test depend on the animation the hit test is driving:
+   hover the strip, the paper swings in front of it, hover is lost, the
+   animation stops, the paper drops back, hover returns. Measured at ~3.5 Hz,
+   and it ate the clicks too -- a click needs mousedown and mouseup on the SAME
+   element, and the bottom band held the cursor 76% of the time. The strip is a
+   sibling of this subtree and never moves, so it is the only hittable thing. */
+.sheet__flutter { pointer-events: none; }
+.content :is(a, button, input, select, textarea, [tabindex]) { pointer-events: auto; }
 
 /* Only the strip flutters now. The old rule fired from anywhere on the sheet,
    which promised the whole page was interactive when it never was.
