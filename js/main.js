@@ -86,16 +86,37 @@
   }
 
   /* The dot grid is shifted per band so the bend reads as one continuous
-     sheet. That needs a real pixel height, which only measurement gives. */
+     sheet. That needs a real pixel height, which only measurement gives.
+
+     Measure the VIEWPORT, never a band. Two traps, and the old version hit
+     both: querySelector('.bend > .band') returns the FIRST band in the
+     document, which belongs to a sheet that is usually turned, and
+     getBoundingClientRect() reports the perspective-SCALED size of anything
+     with a 3D transform. Together they reported 95.51px for a band that is
+     really 92.93px, drifting the grid 2.58px at every seam and 12.91px by the
+     bottom of the page -- a visible line across the paper at each seam.
+     .journal-viewport is the perspective parent, so it carries no transform
+     of its own and its height is the true one. */
   function syncBandHeight() {
-    var b = document.querySelector('.bend > .band');
-    if (b) document.documentElement.style.setProperty('--band-h', b.getBoundingClientRect().height + 'px');
+    var vp = document.querySelector('.journal-viewport');
+    if (!vp) return;
+    var n = parseInt(getComputedStyle(document.documentElement)
+              .getPropertyValue('--bands'), 10) || 6;
+    document.documentElement.style.setProperty(
+      '--band-h', (vp.getBoundingClientRect().height / n) + 'px');
   }
 
   Array.prototype.forEach.call(document.querySelectorAll('.paper'), buildPaper);
   Array.prototype.forEach.call(document.querySelectorAll('.face'),  buildFace);
   syncBandHeight();
-  window.addEventListener('resize', syncBandHeight);
+  /* A window resize listener misses everything else that changes the box --
+     fonts swapping in, the media query at 60vh, the pane being dragged.
+     Observe the element itself and the grid can never go stale. */
+  if (window.ResizeObserver) {
+    new ResizeObserver(syncBandHeight).observe(document.querySelector('.journal-viewport'));
+  } else {
+    window.addEventListener('resize', syncBandHeight);
+  }
 
   /* ---------- engine ---------- */
   var book = new BookEngine(document.getElementById('book'), { lift: 14 });
