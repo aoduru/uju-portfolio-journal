@@ -115,7 +115,13 @@ body {
   border-radius: 3px 3px 12px 12px;
   box-shadow: 0 2px 2px rgba(99,67,67,.08), 0 16px 34px rgba(99,67,67,.16);
 }
-.face--back { transform: rotateX(180deg); }
+/* The two faces sat at exactly Z=0, so which one you saw was decided purely by
+   backface culling -- and mobile WebKit got that wrong, painting the cover's
+   cream back face over its mauve front. A pixel of separation each way leaves
+   nothing to sort. Both get a POSITIVE translateZ: the back face's local +Z
+   points away from the viewer once it is flipped, so this pushes them apart. */
+.face--front { transform: translateZ(1px); }
+.face--back  { transform: rotateX(180deg) translateZ(1px); }
 
 /* A turning page loses the light. Registering the property is what lets it
    interpolate instead of snapping between keyframes. */
@@ -262,10 +268,18 @@ h1.display { font-family: var(--font-hand); font-weight: 400; font-size: clamp(1
    which promised the whole page was interactive when it never was.
    :has() rather than a sibling combinator -- the button follows .sheet__flutter
    in the DOM, so `~` could never have matched it either way. */
-.sheet:not(.is-flipped):has(.flutter-zone:hover) .sheet__flutter,
+/* Keyboard focus is not a pointer affordance, so it stays unguarded. */
 .sheet:not(.is-flipped):has(.flutter-zone:focus-visible) .sheet__flutter {
   animation: flutter 1.6s ease-in-out infinite;
 }
+/* iOS leaves :hover stuck on whatever was last tapped, so tapping the strip to
+   turn the page started this flutter on the sheet revealed underneath and left
+   it looping -- the jitter that outlived the flip by a couple of seconds. */
+@media (hover: hover) and (pointer: fine) {
+  .sheet:not(.is-flipped):has(.flutter-zone:hover) .sheet__flutter {
+    animation: flutter 1.6s ease-in-out infinite;
+  }
+  }
 
 /* Lift cue: a soft shadow along the bottom edge so the strip reads as grabbable
    before you hover it. No translateZ -- the last element given one here
@@ -278,7 +292,8 @@ h1.display { font-family: var(--font-hand); font-weight: 400; font-size: clamp(1
 }
 .sheet:not(.is-flipped):has(.flutter-zone:hover) .face--front::after { opacity: 1; }
 @media (prefers-reduced-motion: reduce) {
-  .sheet:not(.is-flipped):has(.flutter-zone:hover) .sheet__flutter { animation: none; }
+  .sheet:not(.is-flipped):has(.flutter-zone:hover) .sheet__flutter,
+  .sheet:not(.is-flipped):has(.flutter-zone:focus-visible) .sheet__flutter { animation: none; }
 }
 @keyframes flutter {
   /* Positive rotateX, same as the turn: the free edge has to come TOWARD the
@@ -323,4 +338,17 @@ kbd {
   .nav ul { flex-wrap: wrap; }
   .journal-viewport { height: min(520px, 60vh); }
   .cover-art { height: 58%; opacity: .9; }
+
+  /* Flat paper on phones. The bend is 60 bands nested six deep, each its own
+     backface-hidden 3D layer, and that is what mobile WebKit mis-sorts -- it
+     painted the cover's cream back face over the mauve front, and re-sorted
+     mid-turn it left text jagged and clipped. Dropping the rotation collapses
+     the chain into one flat sheet with no DOM change, and with the subtree
+     flat .face's own backface-visibility culls it properly: the ordinary
+     flip-card arrangement. The curve is no loss at this size -- 400ms into a
+     turn the page is edge-on and the lede measures 8px tall. */
+  .face        { transform-style: flat; }
+  .bend, .band { transform: none; transform-style: flat; backface-visibility: visible; }
+  .band::after { display: none; }   /* curl shading, with no curl to shade */
+  .face__flat  { transform: none; } /* no curling bands left to clear */
 }
