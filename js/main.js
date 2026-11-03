@@ -19,12 +19,22 @@
 
   function r2(v) { return Math.round(v * 100) / 100; }
 
-  /* k scales a ring about the PUNCH LINE (y = HOLE), never about the SVG
-     origin, so the holes stay welded to the paper's top edge however far the
-     rings shrink. Stroke widths scale with it too, or small coils keep fat wire. */
+  /* k scales a ring about the PAPER'S TOP EDGE (y = EDGE) -- the thing the coil
+     physically wraps over, and the one y that never moves: the spine is pinned
+     at top:-34px, so the paper's edge is y=34 at every width.
+
+     It was anchored at the punch line first, which is wrong in a way that only
+     shows once k drops. Shrinking about y=HOLE drags the wire's top end DOWN
+     toward the hole, while the paper edge stays at 34 -- so at k=0.62 the whole
+     coil sat 2.2 units BELOW the edge, nothing wrapped over it, and the rings
+     read as lying flat on the page instead of threading through it. Anchored at
+     the edge, the wire keeps the same share of itself above the paper at any
+     size. Stroke widths scale with k too, or small coils keep fat wire. */
+  function scaleY(v, k) { return r2(EDGE + (v - EDGE) * k); }
+
   function coilPaths(cx, k) {
     function X(d) { return r2(cx + d * k); }
-    function Y(v) { return r2(HOLE + (v - HOLE) * k); }
+    function Y(v) { return scaleY(v, k); }
     return {
       over: 'M' + X(0) + ' ' + Y(HOLE + 3) +
             ' C ' + X(3) + ' ' + Y(EDGE - 12) + ', ' + X(-40) + ' ' + Y(EDGE - 28) +
@@ -51,14 +61,18 @@
     var count = Math.max(3, Math.round(W / pitch));
     var k     = pitch / BASE_PITCH;
     var step  = W / count;
-    var rx = r2(RX * k), ry = r2(RY * k), lip = r2(HOLE + 9 * k);
+    /* The punch line rides the same scale, so the hole stays the same distance
+       below the edge in proportion -- closer to it on a smaller pad, as on a
+       real one. */
+    var cy = scaleY(HOLE, k);
+    var rx = r2(RX * k), ry = r2(RY * k), lip = r2(cy + 9 * k);
     function sw(v) { return r2(v * k); }
     var out = '', i, cx, p, f;
     for (i = 0; i < count; i++) {
       cx = r2(step * (i + 0.5));
       p  = coilPaths(cx, k);
       f  = 'url(#wobble-' + ['fine', 'mid', 'loose'][i % 3] + ')';
-      out += '<ellipse cx="' + cx + '" cy="' + HOLE + '" rx="' + rx + '" ry="' + ry + '" fill="#8E6F69"/>';
+      out += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="#8E6F69"/>';
       out += '<g filter="' + f + '">' +
              '<path d="' + p.over + '" fill="none" stroke="rgba(99,67,67,.16)" stroke-width="' + sw(12) + '" stroke-linecap="round" transform="translate(' + sw(3) + ',' + sw(7) + ')"/>' +
              '<path d="' + p.over + '" fill="none" stroke="var(--coil-dk)" stroke-width="' + sw(13) + '" stroke-linecap="round"/>' +
@@ -66,9 +80,9 @@
              '<path d="' + p.gloss+ '" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="' + sw(2.6) + '" stroke-linecap="round"/>' +
              '</g>';
       // near rim, over the wire
-      out += '<path d="M' + r2(cx - rx) + ' ' + HOLE + ' A ' + rx + ' ' + ry + ' 0 0 0 ' + r2(cx + rx) + ' ' + HOLE +
+      out += '<path d="M' + r2(cx - rx) + ' ' + cy + ' A ' + rx + ' ' + ry + ' 0 0 0 ' + r2(cx + rx) + ' ' + cy +
              ' L ' + r2(cx + rx) + ' ' + lip + ' L ' + r2(cx - rx) + ' ' + lip + ' Z" fill="#C9ABA4"/>' +
-             '<path d="M' + r2(cx - rx) + ' ' + HOLE + ' A ' + rx + ' ' + ry + ' 0 0 0 ' + r2(cx + rx) + ' ' + HOLE +
+             '<path d="M' + r2(cx - rx) + ' ' + cy + ' A ' + rx + ' ' + ry + ' 0 0 0 ' + r2(cx + rx) + ' ' + cy +
              '" fill="none" stroke="rgba(99,67,67,.3)" stroke-width="' + sw(1.6) + '"/>';
     }
     return '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + out + '</svg>';
