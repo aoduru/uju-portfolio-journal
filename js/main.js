@@ -9,45 +9,81 @@
      drawn: the arc wraps over the top edge and descends into the punch hole,
      and the near rim of the hole is painted back over the wire. The return
      leg is omitted — on a real pad it is behind the stack and invisible. */
-  var W = 1000, H = 110, EDGE = 34, HOLE = 64, RX = 13, RY = 7.5, COUNT = 13;
+  var H = 110, EDGE = 34, HOLE = 64, RX = 13, RY = 7.5;
+  /* The artwork is authored against a 1000-unit span holding 13 rings, so its
+     natural pitch is 1000/13. Every other size here is derived from that. */
+  var AUTHORED_W = 1000, AUTHORED_RINGS = 13, BASE_PITCH = AUTHORED_W / AUTHORED_RINGS;
+  /* The one tuned number. Below roughly this spacing the wire stops reading as
+     a coil, so a narrow screen drops rings rather than shrinking them further. */
+  var MIN_PITCH = 48;
 
-  function coilPaths(cx) {
+  function r2(v) { return Math.round(v * 100) / 100; }
+
+  /* k scales a ring about the PUNCH LINE (y = HOLE), never about the SVG
+     origin, so the holes stay welded to the paper's top edge however far the
+     rings shrink. Stroke widths scale with it too, or small coils keep fat wire. */
+  function coilPaths(cx, k) {
+    function X(d) { return r2(cx + d * k); }
+    function Y(v) { return r2(HOLE + (v - HOLE) * k); }
     return {
-      over: 'M' + cx + ' ' + (HOLE + 3) +
-            ' C ' + (cx + 3) + ' ' + (EDGE - 12) + ', ' + (cx - 40) + ' ' + (EDGE - 28) +
-            ', ' + (cx - 45) + ' ' + (EDGE - 2),
-      lit:  'M' + cx + ' ' + (HOLE + 2) +
-            ' C ' + (cx + 3) + ' ' + (EDGE - 11) + ', ' + (cx - 39) + ' ' + (EDGE - 26) +
-            ', ' + (cx - 44) + ' ' + (EDGE - 3),
-      gloss:'M' + (cx - 5) + ' ' + (EDGE - 16) +
-            ' C ' + (cx - 15) + ' ' + (EDGE - 26) + ', ' + (cx - 33) + ' ' + (EDGE - 24) +
-            ', ' + (cx - 39) + ' ' + (EDGE - 11)
+      over: 'M' + X(0) + ' ' + Y(HOLE + 3) +
+            ' C ' + X(3) + ' ' + Y(EDGE - 12) + ', ' + X(-40) + ' ' + Y(EDGE - 28) +
+            ', ' + X(-45) + ' ' + Y(EDGE - 2),
+      lit:  'M' + X(0) + ' ' + Y(HOLE + 2) +
+            ' C ' + X(3) + ' ' + Y(EDGE - 11) + ', ' + X(-39) + ' ' + Y(EDGE - 26) +
+            ', ' + X(-44) + ' ' + Y(EDGE - 3),
+      gloss:'M' + X(-5) + ' ' + Y(EDGE - 16) +
+            ' C ' + X(-15) + ' ' + Y(EDGE - 26) + ', ' + X(-33) + ' ' + Y(EDGE - 24) +
+            ', ' + X(-39) + ' ' + Y(EDGE - 11)
     };
   }
 
-  function spiral() {
-    var step = W / COUNT, out = '', i, cx, p, f;
-    for (i = 0; i < COUNT; i++) {
-      cx = Math.round(step * (i + 0.5));
-      p  = coilPaths(cx);
+  /* One ring per `pitch` of real width, drawn 1:1 in CSS pixels. This SVG used
+     to be stretched across the spine with preserveAspectRatio="none", which at
+     phone width crushed the 1000-unit span into 345px -- a 3.9x horizontal
+     squeeze that left every round punch hole more than twice as tall as wide.
+     The COUNT absorbs the width now instead, so a ring is the same shape at
+     every size and a narrow screen simply has fewer of them, like a smaller
+     physical pad. At the full 950px this still resolves to 13 rings at k=0.95,
+     which is exactly the scale the old stretched version drew them at. */
+  function spiral(W) {
+    var pitch = Math.max(MIN_PITCH, W / AUTHORED_RINGS);
+    var count = Math.max(3, Math.round(W / pitch));
+    var k     = pitch / BASE_PITCH;
+    var step  = W / count;
+    var rx = r2(RX * k), ry = r2(RY * k), lip = r2(HOLE + 9 * k);
+    function sw(v) { return r2(v * k); }
+    var out = '', i, cx, p, f;
+    for (i = 0; i < count; i++) {
+      cx = r2(step * (i + 0.5));
+      p  = coilPaths(cx, k);
       f  = 'url(#wobble-' + ['fine', 'mid', 'loose'][i % 3] + ')';
-      out += '<ellipse cx="' + cx + '" cy="' + HOLE + '" rx="' + RX + '" ry="' + RY + '" fill="#8E6F69"/>';
+      out += '<ellipse cx="' + cx + '" cy="' + HOLE + '" rx="' + rx + '" ry="' + ry + '" fill="#8E6F69"/>';
       out += '<g filter="' + f + '">' +
-             '<path d="' + p.over + '" fill="none" stroke="rgba(99,67,67,.16)" stroke-width="12" stroke-linecap="round" transform="translate(3,7)"/>' +
-             '<path d="' + p.over + '" fill="none" stroke="var(--coil-dk)" stroke-width="13" stroke-linecap="round"/>' +
-             '<path d="' + p.lit  + '" fill="none" stroke="var(--coil)" stroke-width="8" stroke-linecap="round"/>' +
-             '<path d="' + p.gloss+ '" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2.6" stroke-linecap="round"/>' +
+             '<path d="' + p.over + '" fill="none" stroke="rgba(99,67,67,.16)" stroke-width="' + sw(12) + '" stroke-linecap="round" transform="translate(' + sw(3) + ',' + sw(7) + ')"/>' +
+             '<path d="' + p.over + '" fill="none" stroke="var(--coil-dk)" stroke-width="' + sw(13) + '" stroke-linecap="round"/>' +
+             '<path d="' + p.lit  + '" fill="none" stroke="var(--coil)" stroke-width="' + sw(8) + '" stroke-linecap="round"/>' +
+             '<path d="' + p.gloss+ '" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="' + sw(2.6) + '" stroke-linecap="round"/>' +
              '</g>';
       // near rim, over the wire
-      out += '<path d="M' + (cx - RX) + ' ' + HOLE + ' A ' + RX + ' ' + RY + ' 0 0 0 ' + (cx + RX) + ' ' + HOLE +
-             ' L ' + (cx + RX) + ' ' + (HOLE + 9) + ' L ' + (cx - RX) + ' ' + (HOLE + 9) + ' Z" fill="#C9ABA4"/>' +
-             '<path d="M' + (cx - RX) + ' ' + HOLE + ' A ' + RX + ' ' + RY + ' 0 0 0 ' + (cx + RX) + ' ' + HOLE +
-             '" fill="none" stroke="rgba(99,67,67,.3)" stroke-width="1.6"/>';
+      out += '<path d="M' + r2(cx - rx) + ' ' + HOLE + ' A ' + rx + ' ' + ry + ' 0 0 0 ' + r2(cx + rx) + ' ' + HOLE +
+             ' L ' + r2(cx + rx) + ' ' + lip + ' L ' + r2(cx - rx) + ' ' + lip + ' Z" fill="#C9ABA4"/>' +
+             '<path d="M' + r2(cx - rx) + ' ' + HOLE + ' A ' + rx + ' ' + ry + ' 0 0 0 ' + r2(cx + rx) + ' ' + HOLE +
+             '" fill="none" stroke="rgba(99,67,67,.3)" stroke-width="' + sw(1.6) + '"/>';
     }
-    return '<svg viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true">' + out + '</svg>';
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true">' + out + '</svg>';
   }
 
-  document.querySelector('.spine--front').innerHTML = spiral();
+  /* Redraw only when the WIDTH changes. The observer below also fires on
+     height, and rebuilding sixty paths because the page got taller is waste. */
+  var spine = document.querySelector('.spine--front');
+  var spiralW = -1;
+  function syncSpiral() {
+    var W = Math.round(spine.getBoundingClientRect().width);
+    if (W <= 0 || W === spiralW) return;
+    spiralW = W;
+    spine.innerHTML = spiral(W);
+  }
 
   /* ---------- paper ----------
      Each .paper placeholder in the markup is swapped for a chain of nested
@@ -108,14 +144,17 @@
 
   Array.prototype.forEach.call(document.querySelectorAll('.paper'), buildPaper);
   Array.prototype.forEach.call(document.querySelectorAll('.face'),  buildFace);
-  syncBandHeight();
+  /* The band grid and the ring count both key off the viewport box, so they
+     resync together. */
+  function syncGeometry() { syncBandHeight(); syncSpiral(); }
+  syncGeometry();
   /* A window resize listener misses everything else that changes the box --
      fonts swapping in, the media query at 60vh, the pane being dragged.
-     Observe the element itself and the grid can never go stale. */
+     Observe the element itself and neither can go stale. */
   if (window.ResizeObserver) {
-    new ResizeObserver(syncBandHeight).observe(document.querySelector('.journal-viewport'));
+    new ResizeObserver(syncGeometry).observe(document.querySelector('.journal-viewport'));
   } else {
-    window.addEventListener('resize', syncBandHeight);
+    window.addEventListener('resize', syncGeometry);
   }
 
   /* ---------- engine ---------- */
