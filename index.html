@@ -17,7 +17,7 @@
      had googleapis.com, which silently fails and falls back to system cursive. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rock+Salt&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;500;600;700&family=Rock+Salt&display=swap">
 
 <link rel="stylesheet" href="css/journal.css">
 </head>
@@ -62,7 +62,7 @@
       <li><a href="#case-studies" data-goto="case-studies">Case Studies</a></li>
       <li><a href="#experience"   data-goto="experience">Experience</a></li>
       <li><a href="#art"          data-goto="art">Art</a></li>
-      <li><a href="#resume"       data-goto="resume">Resume</a></li>
+      <li><a href="#contact"      data-goto="contact">Contact</a></li>
     </ul>
   </nav>
 </header>
@@ -93,9 +93,112 @@
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content">
+          <div class="content content--page">
             <h2 class="display">Case Studies</h2>
-            <p class="lede">Three projects, each with the decision that mattered.</p>
+            <p class="lede lede--tight">Four projects, each with the decision that mattered.</p>
+
+            <!-- The grid is the contents page; the detail opens as a card over the
+                 book. Each case's full text sits in the .case-body beside its plate
+                 rather than in a script, so it is still here with JS off and anything
+                 that reads the page still finds it. cardOverlay.js only moves it. -->
+            <ul class="contents-grid">
+                <li>
+                  <button class="plate" type="button" data-case="portal-redux" aria-haspopup="dialog">
+                    <span class="plate__shot" style="--c:#DCA4A4;--c2:#C98E8E"></span>
+                    <span class="plate__title">Portal, rebuilt</span>
+                    <span class="plate__meta">Design system</span>
+                  </button>
+                  <div class="case-body" id="case-portal-redux" hidden>
+                    <dl class="case-facts">
+                  <div><dt>Role</dt><dd class="ph">your part in it</dd></div>
+                  <div><dt>Constraints</dt><dd class="ph">time, scope, what you could not change</dd></div>
+                  <div><dt>Shipped</dt><dd class="ph">what actually went out</dd></div>
+                  <div><dt>Moved</dt><dd class="ph">the number that changed</dd></div>
+                    </dl>
+                    <div class="case-prose">
+                      <p class="ph">Placeholder &mdash; the situation in two or three sentences: what
+                        existed, who it failed, and why it was worth changing.</p>
+                      <p class="ph">Placeholder &mdash; the decision that mattered, and what it cost.</p>
+                    </div>
+                    <figure class="case-margin">
+                      <div class="case-margin__slot" aria-hidden="true"></div>
+                      <figcaption>process artefact &mdash; pending</figcaption>
+                    </figure>
+                  </div>
+                </li>
+                <li>
+                  <button class="plate" type="button" data-case="one-grammar" aria-haspopup="dialog">
+                    <span class="plate__shot" style="--c:#8FB8E0;--c2:#5E8CBC"></span>
+                    <span class="plate__title">One grammar</span>
+                    <span class="plate__meta">Component language</span>
+                  </button>
+                  <div class="case-body" id="case-one-grammar" hidden>
+                    <dl class="case-facts">
+                  <div><dt>Role</dt><dd class="ph">your part in it</dd></div>
+                  <div><dt>Constraints</dt><dd class="ph">time, scope, what you could not change</dd></div>
+                  <div><dt>Shipped</dt><dd class="ph">what actually went out</dd></div>
+                  <div><dt>Moved</dt><dd class="ph">the number that changed</dd></div>
+                    </dl>
+                    <div class="case-prose">
+                      <p class="ph">Placeholder &mdash; the situation in two or three sentences: what
+                        existed, who it failed, and why it was worth changing.</p>
+                      <p class="ph">Placeholder &mdash; the decision that mattered, and what it cost.</p>
+                    </div>
+                    <figure class="case-margin">
+                      <div class="case-margin__slot" aria-hidden="true"></div>
+                      <figcaption>process artefact &mdash; pending</figcaption>
+                    </figure>
+                  </div>
+                </li>
+                <li>
+                  <button class="plate" type="button" data-case="forty-tickets" aria-haspopup="dialog">
+                    <span class="plate__shot" style="--c:#FFE27A;--c2:#D9B84A"></span>
+                    <span class="plate__title">Forty tickets</span>
+                    <span class="plate__meta">Support and triage</span>
+                  </button>
+                  <div class="case-body" id="case-forty-tickets" hidden>
+                    <dl class="case-facts">
+                  <div><dt>Role</dt><dd class="ph">your part in it</dd></div>
+                  <div><dt>Constraints</dt><dd class="ph">time, scope, what you could not change</dd></div>
+                  <div><dt>Shipped</dt><dd class="ph">what actually went out</dd></div>
+                  <div><dt>Moved</dt><dd class="ph">the number that changed</dd></div>
+                    </dl>
+                    <div class="case-prose">
+                      <p class="ph">Placeholder &mdash; the situation in two or three sentences: what
+                        existed, who it failed, and why it was worth changing.</p>
+                      <p class="ph">Placeholder &mdash; the decision that mattered, and what it cost.</p>
+                    </div>
+                    <figure class="case-margin">
+                      <div class="case-margin__slot" aria-hidden="true"></div>
+                      <figcaption>process artefact &mdash; pending</figcaption>
+                    </figure>
+                  </div>
+                </li>
+                <li>
+                  <button class="plate" type="button" data-case="mobile-parity" aria-haspopup="dialog">
+                    <span class="plate__shot" style="--c:#D94A63;--c2:#A93B51"></span>
+                    <span class="plate__title">Mobile parity</span>
+                    <span class="plate__meta">Responsive rebuild</span>
+                  </button>
+                  <div class="case-body" id="case-mobile-parity" hidden>
+                    <dl class="case-facts">
+                  <div><dt>Role</dt><dd class="ph">your part in it</dd></div>
+                  <div><dt>Constraints</dt><dd class="ph">time, scope, what you could not change</dd></div>
+                  <div><dt>Shipped</dt><dd class="ph">what actually went out</dd></div>
+                  <div><dt>Moved</dt><dd class="ph">the number that changed</dd></div>
+                    </dl>
+                    <div class="case-prose">
+                      <p class="ph">Placeholder &mdash; the situation in two or three sentences: what
+                        existed, who it failed, and why it was worth changing.</p>
+                      <p class="ph">Placeholder &mdash; the decision that mattered, and what it cost.</p>
+                    </div>
+                    <figure class="case-margin">
+                      <div class="case-margin__slot" aria-hidden="true"></div>
+                      <figcaption>process artefact &mdash; pending</figcaption>
+                    </figure>
+                  </div>
+                </li>
+            </ul>
           </div>
         </div>
         <div class="face face--back"><div class="paper paper--inner"></div></div>
@@ -107,9 +210,37 @@
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content">
+          <div class="content content--page">
             <h2 class="display">Experience</h2>
-            <p class="lede">Where the engineering rigour comes from.</p>
+            <p class="lede lede--tight">Where the engineering rigour comes from.</p>
+
+            <ol class="timeline">
+              <li class="tl-item">
+                <p class="tl-when">2024 &mdash; now</p>
+                <h3 class="tl-what">UX &amp; Design Engineer</h3>
+                <p class="tl-note">Design systems and front-end for a property-management platform.</p>
+              </li>
+              <li class="tl-item">
+                <p class="tl-when">2022 &mdash; 2024</p>
+                <h3 class="tl-what">Product Designer</h3>
+                <p class="tl-note">Flows, prototypes, and the first component library.</p>
+              </li>
+              <li class="tl-item">
+                <p class="tl-when">before that</p>
+                <h3 class="tl-what">Cognitive Science, B.S.</h3>
+                <p class="tl-note">Perception and memory &mdash; how people actually read an interface.</p>
+              </li>
+            </ol>
+
+            <!-- The keyword layer a resume carries and a narrative does not. With the
+                 Resume sheet cut, this page is the only career content on the site, so
+                 it has to be skimmable as well as readable. -->
+            <div class="toolbox">
+              <h3 class="toolbox__label">Design</h3>
+              <ul class="toolbox__set"><li>Figma</li><li>Design systems</li><li>Prototyping</li><li>Usability testing</li><li>Accessibility (WCAG)</li></ul>
+              <h3 class="toolbox__label">Build</h3>
+              <ul class="toolbox__set"><li>HTML / CSS / Sass</li><li>JavaScript</li><li>React</li><li>Git</li><li>Design tokens</li></ul>
+            </div>
           </div>
         </div>
         <div class="face face--back"><div class="paper paper--inner"></div></div>
@@ -121,23 +252,89 @@
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content">
+          <div class="content content--page">
             <h2 class="display">Art</h2>
-            <p class="lede">Eighteen pieces, and counting.</p>
+            <p class="lede lede--tight">Eighteen pieces, and counting.</p>
+
+            <!-- PLACEHOLDER titles and flat colour stand-ins. The real eighteen are
+                 pending; swapping them is an edit to this list and nothing else.
+                 Clicking opens the same card the case studies use &mdash; the piece
+                 large, with the title and nothing else. -->
+            <ul class="stickersheet">
+                <li><button class="art-piece" type="button" data-art="peaches" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#F3E3DE;--c2:#DCA4A4"></span>
+                  <span class="art-piece__cap">Peaches</span></button></li>
+                <li><button class="art-piece" type="button" data-art="blue-square" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#FDF5F3;--c2:#8FB8E0"></span>
+                  <span class="art-piece__cap">Blue square</span></button></li>
+                <li><button class="art-piece" type="button" data-art="big-star" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#F3E3DE;--c2:#D94A63"></span>
+                  <span class="art-piece__cap">Big star</span></button></li>
+                <li><button class="art-piece" type="button" data-art="study-ink" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#FFFDF8;--c2:#634343"></span>
+                  <span class="art-piece__cap">Study, ink</span></button></li>
+                <li><button class="art-piece" type="button" data-art="garden" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#DCA4A4;--c2:#FFE27A"></span>
+                  <span class="art-piece__cap">Garden</span></button></li>
+                <li><button class="art-piece" type="button" data-art="dusk" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#8FB8E0;--c2:#634343"></span>
+                  <span class="art-piece__cap">Dusk</span></button></li>
+                <li><button class="art-piece" type="button" data-art="kitchen" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#FDF5F3;--c2:#C98E8E"></span>
+                  <span class="art-piece__cap">Kitchen</span></button></li>
+                <li><button class="art-piece" type="button" data-art="two-chairs" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#F3E3DE;--c2:#5E8CBC"></span>
+                  <span class="art-piece__cap">Two chairs</span></button></li>
+                <li><button class="art-piece" type="button" data-art="lagos" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#FFE27A;--c2:#D94A63"></span>
+                  <span class="art-piece__cap">Lagos</span></button></li>
+                <li><button class="art-piece" type="button" data-art="self" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#F3DEDA;--c2:#8A6A66"></span>
+                  <span class="art-piece__cap">Self</span></button></li>
+                <li><button class="art-piece" type="button" data-art="window" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#FDF5F3;--c2:#8FB8E0"></span>
+                  <span class="art-piece__cap">Window</span></button></li>
+                <li><button class="art-piece" type="button" data-art="red-room" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#D94A63;--c2:#FFE27A"></span>
+                  <span class="art-piece__cap">Red room</span></button></li>
+                <li><button class="art-piece" type="button" data-art="cousins" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#F3E3DE;--c2:#C98E8E"></span>
+                  <span class="art-piece__cap">Cousins</span></button></li>
+                <li><button class="art-piece" type="button" data-art="rain" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#8FB8E0;--c2:#FDF5F3"></span>
+                  <span class="art-piece__cap">Rain</span></button></li>
+                <li><button class="art-piece" type="button" data-art="market" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#FFE27A;--c2:#634343"></span>
+                  <span class="art-piece__cap">Market</span></button></li>
+                <li><button class="art-piece" type="button" data-art="still-life" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#FDF5F3;--c2:#DCA4A4"></span>
+                  <span class="art-piece__cap">Still life</span></button></li>
+                <li><button class="art-piece" type="button" data-art="night-bus" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#634343;--c2:#8FB8E0"></span>
+                  <span class="art-piece__cap">Night bus</span></button></li>
+                <li><button class="art-piece" type="button" data-art="hands" aria-haspopup="dialog">
+                  <span class="art-piece__shot" style="--c:#F3DEDA;--c2:#D94A63"></span>
+                  <span class="art-piece__cap">Hands</span></button></li>
+            </ul>
           </div>
         </div>
         <div class="face face--back"><div class="paper paper--inner"></div></div>
       </div>
-      <button class="flutter-zone" type="button" aria-label="Turn to Resume"></button>
+      <button class="flutter-zone" type="button" aria-label="Turn to Contact"></button>
     </article>
 
-    <article class="sheet" data-page="resume" aria-label="Resume">
+    <article class="sheet" data-page="contact" aria-label="Contact">
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content">
-            <h2 class="display">Resume</h2>
-            <p class="lede">The one-page version.</p>
+          <div class="content content--page">
+            <h2 class="display">Contact</h2>
+            <p class="lede lede--tight">The shortest way to reach me.</p>
+
+            <!-- Deliberately a shell. Contact replaced the Resume sheet and its design
+                 is still open: form or a plain email link, where a request for the
+                 resume lands, and how loud the page goes. -->
+            <p class="ph ph--block">Placeholder &mdash; this sheet is still being designed.</p>
           </div>
         </div>
         <div class="face face--back"><div class="paper paper--inner"></div></div>
@@ -149,7 +346,7 @@
   <div class="spine spine--front" aria-hidden="true"></div>
 </main>
 
-<p class="hint" id="hint">Lift the bottom edge, or use the nav. <kbd>←</kbd> <kbd>→</kbd> also work.</p>
+<p class="hint" id="hint">Lift the bottom edge, or use the nav. <kbd>↓</kbd> <kbd>↑</kbd> also work.</p>
 
 <script src="js/bookEngine.js"></script>
 <script src="js/main.js"></script>

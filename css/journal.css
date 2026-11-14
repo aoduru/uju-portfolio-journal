@@ -20,12 +20,20 @@
      so the dot grid can be phase-shifted per band and read as one sheet. */
   --coil:       #8FB8E0;
   --coil-dk:    #5E8CBC;
+  /* Annotation only. These two never carry structure -- they mark, highlight
+     and tape. Structure stays mauve, ink and page. */
+  --marker:     #D94A63;
+  --high:       #FFE27A;
 
   /* Two faces only. --font-hand is the NAME alone — the wordmark and the
      cover's h1; everything else is Inter. Rock Salt has tall glyphs and a deep
      j descender, so anywhere it sets two lines needs a line-height near 1.35
      or "Uju" collides with "Duru". It ships at 400 only; never ask for a bold. */
   --font-hand: 'Rock Salt', cursive;
+  /* Caveat does the handwritten annotations -- dates, captions, margin notes.
+     Rock Salt stays the NAME alone; it is too tall and too loud for running
+     text, and it ships at 400 only. */
+  --font-loop: 'Caveat', cursive;
   --font-body: 'Inter', system-ui, sans-serif;
 
   --flip-ms: 820ms;
@@ -329,6 +337,282 @@ kbd {
   border-radius: 4px; padding: 0 .35em;
 }
 
+
+/* ============================================================
+   Page content
+   Everything here lives inside .content, which rides on .face__flat --
+   already flat, already clipped. Nothing in this section may touch the
+   band chain: filter, opacity<1, clip-path and overflow all collapse the
+   bend (invariant 2).
+
+   A sheet is min(560px, 68vh) and .face__flat CLIPS rather than scrolls,
+   so every page below is sized to fit rather than to scroll. That cap is
+   the real constraint on how much any one sheet can say.
+   ============================================================ */
+
+/* The cover can afford its deep top padding; a page carrying a grid cannot.
+   This buys back roughly 40px without touching the cover. */
+.content--page {
+  padding-top: clamp(2.2rem, 4.5vh, 3rem);
+  padding-bottom: clamp(1rem, 2.4vh, 2rem);
+}
+/* --page-h is min(560px, 68vh), so a short laptop window shrinks the sheet
+   while a width-only clamp keeps the heading at its full 54px. Experience
+   overran by 23px at 1440x720 because of exactly that. Adding a vh term lets
+   the heading give way with the page; min() keeps whichever of width or
+   height is the real constraint. */
+.content--page .display { font-size: clamp(1.9rem, min(4.8vw, 6.2vh), 3.4rem); }
+.lede--tight { margin: .45rem 0 0; max-width: 52ch; }
+
+/* Placeholder copy, marked so nothing here can be mistaken for a finished
+   claim -- these pages go public and the case studies stay abstracted. */
+.ph { color: var(--ink-soft); font-style: italic; opacity: .85; }
+.ph--block {
+  margin-top: clamp(1.2rem, 3vh, 2rem);
+  padding: 1rem 1.1rem;
+  border: 1px dashed rgba(201, 142, 142, .7);
+  border-radius: 8px;
+  max-width: 46ch;
+}
+
+/* ---------- the peel ----------
+   Shared by the case study plates and the art pieces: one behaviour, built
+   once, learned once. It is a corner LIFT, not a true curl -- a real curl
+   needs the band chain or a displacement map, and neither is worth it on a
+   thing that moves. The plate tilts about its bottom-left corner and pushes
+   toward the viewer; the card then flies from that pose and flattens.
+
+   perspective here opens a 3D context for the plates only. It is inside
+   .face__flat, which is already flat, so the bend is untouched. */
+.contents-grid, .stickersheet { perspective: 900px; }
+
+.plate, .art-piece {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: #fff;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transform-origin: 12% 88%;
+  box-shadow: 0 1px 1px rgba(99, 67, 67, .08), 0 8px 18px rgba(99, 67, 67, .14);
+  transition: transform 220ms var(--flip-ease), box-shadow 220ms var(--flip-ease);
+}
+/* Keyboard focus is not a pointer affordance, so it stays outside the hover
+   query (invariant 7). */
+.plate:focus-visible, .art-piece:focus-visible {
+  outline: 2px solid var(--marker);
+  outline-offset: 3px;
+}
+/* iOS leaves :hover stuck on the last tapped element, so every hover
+   affordance in this project is gated (invariant 7). */
+@media (hover: hover) and (pointer: fine) {
+  .plate:hover, .art-piece:hover {
+    transform: rotate3d(1, -1, 0, 13deg) translateZ(14px);
+    box-shadow: -6px 14px 20px rgba(99, 67, 67, .20), 0 30px 46px rgba(99, 67, 67, .17);
+    z-index: 4;
+  }
+}
+/* The plate the open card came from, while that card is up. */
+.plate.is-source, .art-piece.is-source {
+  opacity: .22;
+  transform: rotate3d(1, -1, 0, 20deg) translateZ(18px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .plate, .art-piece { transition: none; }
+}
+
+/* ---------- case studies: the contents page ---------- */
+.contents-grid {
+  list-style: none;
+  margin: clamp(1rem, 2.5vh, 1.5rem) 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(.8rem, 2vh, 1.3rem) clamp(1rem, 3vw, 2rem);
+  max-width: 600px;
+}
+.plate {
+  padding: 8px 8px 10px;
+  border-radius: 2px;
+}
+/* washi tape across the top-left corner */
+.plate::before {
+  content: "";
+  position: absolute;
+  top: -7px; left: 14%;
+  width: 54px; height: 17px;
+  background: rgba(143, 184, 224, .5);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35);
+  transform: rotate(-4deg);
+  pointer-events: none;
+}
+.plate__shot {
+  display: block;
+  height: clamp(62px, 11vh, 86px);
+  border-radius: 1px;
+  background: linear-gradient(152deg, var(--c), var(--c2));
+}
+.plate__title {
+  display: block;
+  margin-top: .5rem;
+  font-weight: 600;
+  font-size: .95rem;
+  line-height: 1.2;
+}
+.plate__meta {
+  display: block;
+  font-family: var(--font-loop);
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--ink-soft);
+}
+
+/* ---------- experience ---------- */
+.timeline {
+  list-style: none;
+  position: relative;
+  margin: clamp(.6rem, 2.2vh, 1.5rem) 0 0;
+  padding: 0 0 0 2.2rem;
+  max-width: 54ch;
+}
+/* the washi spine -- one strip of tape, the page's whole handmade budget */
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: .55rem; top: .3rem; bottom: .3rem;
+  width: 14px;
+  background: rgba(143, 184, 224, .45);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35);
+  transform: rotate(.4deg);
+}
+.tl-item { position: relative; margin-bottom: clamp(.35rem, 1.3vh, 1rem); }
+.tl-item::before {
+  content: "";
+  position: absolute;
+  left: -1.75rem; top: .45rem;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: var(--page);
+  box-shadow: 0 0 0 2px var(--cover-edge);
+}
+.tl-when {
+  font-family: var(--font-loop);
+  font-size: 1.02rem; line-height: 1.15;
+  color: var(--ink-soft);
+  margin: 0;
+}
+.tl-what { margin: 0; font-size: .95rem; font-weight: 600; line-height: 1.25; }
+.tl-note { margin: .1rem 0 0; font-size: .84rem; line-height: 1.45; color: var(--ink-soft); }
+
+/* The skim layer. Plain on purpose: this is the part a recruiter scans, and
+   craft here would get in the way of reading it fast. */
+.toolbox {
+  margin-top: clamp(.6rem, 1.7vh, 1.3rem);
+  padding-top: clamp(.55rem, 1.5vh, 1rem);
+  border-top: 1px dashed rgba(201, 142, 142, .6);
+  max-width: 54ch;
+}
+.toolbox__label {
+  margin: 0 0 .3rem;
+  font-size: .62rem; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--cover-edge);
+}
+.toolbox__set {
+  list-style: none;
+  display: flex; flex-wrap: wrap;
+  gap: .3rem .35rem;
+  margin: 0 0 .6rem; padding: 0;
+}
+.toolbox__set:last-child { margin-bottom: 0; }
+.toolbox__set li {
+  font-size: .73rem; font-weight: 500;
+  padding: .16rem .45rem;
+  border-radius: 4px;
+  background: var(--page-2);
+  color: var(--ink-soft);
+}
+
+/* ---------- art: the sticker sheet ----------
+   The one page where loud costs nothing, because the collage IS the content.
+   Angles come from nth-child so no two neighbours sit parallel. */
+.stickersheet {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(.5rem, 1.4vh, .85rem) clamp(.5rem, 1.4vw, .9rem);
+  margin: clamp(1rem, 2.5vh, 1.5rem) 0 0;
+  padding: 0;
+}
+.art-piece {
+  padding: 5px 5px 6px;
+  border-radius: 2px;
+}
+.art-piece__shot {
+  display: block;
+  height: clamp(44px, 7.5vh, 62px);
+  border-radius: 1px;
+  background: linear-gradient(152deg, var(--c), var(--c2));
+}
+.art-piece__cap {
+  display: block;
+  margin-top: .2rem;
+  font-family: var(--font-loop);
+  font-size: .92rem; line-height: 1.15;
+  color: var(--ink-soft);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+/* The angle keys off the LI, not the button. Each button is the only child of
+   its li, so :nth-child on .art-piece matched 1 every time and all eighteen
+   pieces sat at the same -2.2deg. */
+.art-piece                        { transform: rotate(-2.2deg); }
+.stickersheet li:nth-child(2n) .art-piece { transform: rotate(1.8deg); }
+.stickersheet li:nth-child(3n) .art-piece { transform: rotate(-.9deg); }
+.stickersheet li:nth-child(5n) .art-piece { transform: rotate(2.6deg); }
+.stickersheet li:nth-child(7n) .art-piece { transform: rotate(-3deg); }
+/* Hover and the open-source state both have to beat the resting tilt, so they
+   are restated here rather than relying on source order alone. */
+@media (hover: hover) and (pointer: fine) {
+  .stickersheet li .art-piece:hover {
+    transform: rotate(0deg) rotate3d(1, -1, 0, 13deg) translateZ(14px);
+  }
+}
+.stickersheet li .art-piece.is-source { transform: rotate(0deg) rotate3d(1, -1, 0, 20deg) translateZ(18px); }
+
+/* ---------- case body ----------
+   Lives in the markup next to its plate so the text is there with JS off.
+   cardOverlay.js moves it into the card; it is never shown in place. */
+.case-body[hidden] { display: none; }
+.case-facts { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6rem 1.4rem; }
+.case-facts dt {
+  font-size: .62rem; font-weight: 700;
+  letter-spacing: .12em; text-transform: uppercase;
+  color: var(--cover-edge);
+}
+.case-facts dd { margin: .1rem 0 0; font-size: .88rem; line-height: 1.4; }
+.case-prose { margin-top: 1.2rem; }
+.case-prose p { font-size: .92rem; line-height: 1.6; margin: 0 0 .8rem; }
+.case-margin {
+  margin: 1.2rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px dashed rgba(201, 142, 142, .6);
+}
+.case-margin__slot {
+  height: 120px;
+  border: 1px dashed rgba(201, 142, 142, .8);
+  border-radius: 6px;
+  background: var(--page-2);
+}
+.case-margin figcaption {
+  margin-top: .4rem;
+  font-family: var(--font-loop);
+  font-size: .98rem;
+  color: var(--ink-soft);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .sheet, .sheet__flutter { transition-duration: 1ms; }
   .sheet:hover .sheet__flutter { animation: none; }
@@ -336,7 +620,11 @@ kbd {
 @media (max-width: 700px) {
   .masthead { flex-direction: column; gap: .5rem; }
   .nav ul { flex-wrap: wrap; }
-  .journal-viewport { height: min(520px, 60vh); }
+  /* Raised from min(520px, 60vh). The content pages need the room: Experience
+     overran a 487px sheet by 83px at 375x812, and deleting the role notes to
+     fit would have cost the phone reader the only line explaining each job.
+     At 70vh the masthead, page and hint still clear an iPhone SE's 667px. */
+  .journal-viewport { height: min(600px, 70vh); }
   .cover-art { height: 58%; opacity: .9; }
 
   /* Flat paper on phones. The bend is 60 bands nested six deep, each its own
@@ -351,4 +639,56 @@ kbd {
   .bend, .band { transform: none; transform-style: flat; backface-visibility: visible; }
   .band::after { display: none; }   /* curl shading, with no curl to shade */
   .face__flat  { transform: none; } /* no curling bands left to clear */
+
+  /* The sheet is min(520px, 60vh) here -- roughly 380px of usable height on a
+     375x812 phone -- and .face__flat still clips. Every grid below is retuned
+     to that budget rather than allowed to run off the bottom of the page. */
+  .content--page { padding-top: 1.9rem; }
+  .contents-grid { gap: .7rem .8rem; }
+  .plate__shot   { height: 56px; }
+  .plate::before { width: 42px; height: 14px; }
+
+  /* Six columns leaves a 50px plate at this width, which is smaller than the
+     thumbnails were ever meant to be. Four wider ones over five rows fit the
+     same eighteen pieces into less height. */
+  .stickersheet       { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .45rem .5rem; }
+  .art-piece__shot    { height: 36px; }
+  .art-piece__cap     { font-size: .85rem; }
+
+  .tl-item { margin-bottom: .45rem; }
+  .tl-note { font-size: .8rem; }
+  .case-facts { grid-template-columns: 1fr; gap: .5rem; }
+}
+
+/* ============================================================
+   Short viewports
+   Applies at ANY width: a 375x667 phone and a 1280x640 desktop window hit
+   the same wall. The sheet is 70vh / 68vh there, and Experience -- heading,
+   lede, three described roles and ten skill chips -- has a hard minimum
+   height that simply does not fit it.
+
+   What gives, in order of what costs the reader least: the section lede
+   (the title already says it), then the type scale on the notes and chips.
+   The role descriptions stay. They are the only line explaining each job,
+   and dropping them to save pixels would gut the page on exactly the
+   device a recruiter is most likely to open it on.
+   Placed last in the file so it wins over the width query above.
+   ============================================================ */
+@media (max-height: 700px) {
+  .content--page { padding-top: 1.4rem; padding-bottom: .8rem; }
+  .content--page .lede { display: none; }
+
+  .timeline { margin-top: .6rem; }
+  .tl-item  { margin-bottom: .3rem; }
+  .tl-when  { font-size: .95rem; }
+  .tl-what  { font-size: .9rem; }
+  .tl-note  { font-size: .76rem; line-height: 1.32; }
+
+  .toolbox        { margin-top: .55rem; padding-top: .5rem; }
+  .toolbox__label { font-size: .58rem; margin-bottom: .2rem; }
+  .toolbox__set   { gap: .22rem .28rem; margin-bottom: .4rem; }
+  .toolbox__set li { font-size: .68rem; padding: .12rem .38rem; }
+
+  .contents-grid { margin-top: .7rem; gap: .6rem .9rem; }
+  .stickersheet  { margin-top: .7rem; }
 }
