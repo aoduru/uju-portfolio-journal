@@ -661,6 +661,79 @@ kbd {
 }
 
 /* ============================================================
+   The lifted card
+   Outside the 3D scene entirely -- see the note in index.html. It is the
+   same object the plate was, flown from the plate's box and flattened, so
+   case studies and art share one interaction built once.
+   ============================================================ */
+.scrim {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(99, 67, 67, .42);
+}
+.insert {
+  position: fixed; z-index: 201;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(680px, 92vw);
+  max-height: 86vh;
+  overflow: auto;
+  background: var(--page);
+  border-radius: 4px 4px 14px 14px;
+  padding: clamp(1.5rem, 3vw, 2.3rem);
+}
+.insert[hidden], .scrim[hidden] { display: none; }
+/* The shadow lives on a pseudo-element so the card's own animation only ever
+   touches transform and opacity, which the compositor can take. Animating a
+   box-shadow would put the whole flight on the main thread. */
+.insert::after {
+  content: "";
+  position: absolute; inset: 0; z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 10px 24px rgba(99, 67, 67, .22), 0 36px 70px rgba(99, 67, 67, .26);
+}
+.insert__close {
+  position: absolute; top: .55rem; right: .7rem;
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border: 0; border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 1.5rem; line-height: 1;
+  cursor: pointer;
+}
+.insert__close:hover { background: var(--page-2); color: var(--ink); }
+.insert__close:focus-visible { outline: 2px solid var(--marker); outline-offset: 1px; }
+
+.insert__title {
+  margin: 0 2.2rem .9rem 0;
+  font-size: clamp(1.4rem, 3vw, 1.9rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -.01em;
+}
+.insert__title--art { margin: .9rem 0 0; text-align: center; }
+
+/* Art: the piece shown large IS the content, so the card carries it and the
+   title and nothing else. No year, no medium, no wall label. */
+.insert--art { width: min(560px, 92vw); }
+.insert__art {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  border-radius: 2px;
+  background: linear-gradient(152deg, var(--c), var(--c2));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .insert, .scrim { animation: none; }
+}
+@media (max-width: 700px) {
+  .insert { width: 94vw; max-height: 88vh; padding: 1.2rem; }
+  .insert__title { margin-right: 2rem; }
+}
+
+/* ============================================================
    Short viewports
    Applies at ANY width: a 375x667 phone and a 1280x640 desktop window hit
    the same wall. The sheet is 70vh / 68vh there, and Experience -- heading,

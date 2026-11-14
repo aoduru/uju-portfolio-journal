@@ -346,9 +346,21 @@
   <div class="spine spine--front" aria-hidden="true"></div>
 </main>
 
+<!-- The card sits OUTSIDE .journal-viewport deliberately. That element carries
+     perspective: 1700px, and a perspective ancestor becomes the containing block
+     for position:fixed descendants -- nested inside it a fixed overlay would be
+     positioned against the book rather than the window. Out here it also escapes
+     .face__flat's overflow:hidden and the sheet's own rotation. -->
+<div class="scrim" id="scrim" hidden></div>
+<div class="insert" id="insert" role="dialog" aria-modal="true" hidden>
+  <button class="insert__close" id="insertClose" type="button" aria-label="Close">&times;</button>
+  <div class="insert__body" id="insertBody"></div>
+</div>
+
 <p class="hint" id="hint">Lift the bottom edge, or use the nav. <kbd>↓</kbd> <kbd>↑</kbd> also work.</p>
 
 <script src="js/bookEngine.js"></script>
+<script src="js/cardOverlay.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
