@@ -171,9 +171,19 @@
     window.addEventListener('resize', syncGeometry);
   }
 
-  /* ---------- engine ---------- */
-  var book = new BookEngine(document.getElementById('book'), { lift: 14 });
+  /* ---------- engine and card ---------- */
+  var card = new CardOverlay({
+    card:  'insert',
+    scrim: 'scrim',
+    body:  'insertBody',
+    close: 'insertClose'
+  });
+  var book = new BookEngine(document.getElementById('book'), {
+    lift: 14,
+    blocked: function () { return card.isOpen(); }
+  });
   window.book = book;
+  window.card = card;
 
   var links = Array.prototype.slice.call(document.querySelectorAll('[data-goto]'));
   links.forEach(function (a) {
@@ -190,7 +200,13 @@
     });
   });
 
-  // deep link on load
+  /* Deep link on load. A card's address is "<page>/<slug>", so the hash is
+     split: the book jumps to the sheet without animating, then the card opens
+     on top of it. That is what makes a single case study linkable. */
   var start = (location.hash || '').slice(1);
-  if (start) book.goToPage(start, false, false);
+  if (start) {
+    var parts = start.split('/');
+    book.goToPage(parts[0], false, false);
+    if (parts[1]) card.openBySlug(parts[0], parts[1], { animate: false });
+  }
 }());

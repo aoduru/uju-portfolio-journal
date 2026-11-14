@@ -17,7 +17,7 @@
      had googleapis.com, which silently fails and falls back to system cursive. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rock+Salt&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;700&family=Inter:wght@400;500;600;700&family=Rock+Salt&display=swap">
 
 <link rel="stylesheet" href="css/journal.css">
 </head>
@@ -62,7 +62,7 @@
       <li><a href="#case-studies" data-goto="case-studies">Case Studies</a></li>
       <li><a href="#experience"   data-goto="experience">Experience</a></li>
       <li><a href="#art"          data-goto="art">Art</a></li>
-      <li><a href="#resume"       data-goto="resume">Resume</a></li>
+      <li><a href="#contact"      data-goto="contact">Contact</a></li>
     </ul>
   </nav>
 </header>
@@ -93,9 +93,112 @@
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content">
+          <div class="content content--page">
             <h2 class="display">Case Studies</h2>
-            <p class="lede">Three projects, each with the decision that mattered.</p>
+            <p class="lede lede--tight">Four projects, each with the decision that mattered.</p>
+
+            <!-- The grid is the contents page; the detail opens as a card over the
+                 book. Each case's full text sits in the .case-body beside its plate
+                 rather than in a script, so it is still here with JS off and anything
+                 that reads the page still finds it. cardOverlay.js only moves it. -->
+            <ul class="contents-grid">
+                <li>
+                  <button class="plate" type="button" data-case="portal-redux" aria-haspopup="dialog">
+                    <span class="plate__shot" style="--c:#DCA4A4;--c2:#C98E8E"></span>
+                    <span class="plate__title">Portal, rebuilt</span>
+                    <span class="plate__meta">Design system</span>
+                  </button>
+                  <div class="case-body" id="case-portal-redux" hidden>
+                    <dl class="case-facts">
+                  <div><dt>Role</dt><dd class="ph">your part in it</dd></div>
+                  <div><dt>Constraints</dt><dd class="ph">time, scope, what you could not change</dd></div>
+                  <div><dt>Shipped</dt><dd class="ph">what actually went out</dd></div>
+                  <div><dt>Moved</dt><dd class="ph">the number that changed</dd></div>
+                    </dl>
+                    <div class="case-prose">
+                      <p class="ph">Placeholder &mdash; the situation in two or three sentences: what
+                        existed, who it failed, and why it was worth changing.</p>
+                      <p class="ph">Placeholder &mdash; the decision that mattered, and what it cost.</p>
+                    </div>
+                    <figure class="case-margin">
+                      <div class="case-margin__slot" aria-hidden="true"></div>
+                      <figcaption>process artefact &mdash; pending</figcaption>
+                    </figure>
+                  </div>
+                </li>
+                <li>
+                  <button class="plate" type="button" data-case="one-grammar" aria-haspopup="dialog">
+                    <span class="plate__shot" style="--c:#8FB8E0;--c2:#5E8CBC"></span>
+                    <span class="plate__title">One grammar</span>
+                    <span class="plate__meta">Component language</span>
+                  </button>
+                  <div class="case-body" id="case-one-grammar" hidden>
+                    <dl class="case-facts">
+                  <div><dt>Role</dt><dd class="ph">your part in it</dd></div>
+                  <div><dt>Constraints</dt><dd class="ph">time, scope, what you could not change</dd></div>
+                  <div><dt>Shipped</dt><dd class="ph">what actually went out</dd></div>
+                  <div><dt>Moved</dt><dd class="ph">the number that changed</dd></div>
+                    </dl>
+                    <div class="case-prose">
+                      <p class="ph">Placeholder &mdash; the situation in two or three sentences: what
+                        existed, who it failed, and why it was worth changing.</p>
+                      <p class="ph">Placeholder &mdash; the decision that mattered, and what it cost.</p>
+                    </div>
+                    <figure class="case-margin">
+                      <div class="case-margin__slot" aria-hidden="true"></div>
+                      <figcaption>process artefact &mdash; pending</figcaption>
+                    </figure>
+                  </div>
+                </li>
+                <li>
+                  <button class="plate" type="button" data-case="forty-tickets" aria-haspopup="dialog">
+                    <span class="plate__shot" style="--c:#FFE27A;--c2:#D9B84A"></span>
+                    <span class="plate__title">Forty tickets</span>
+                    <span class="plate__meta">Support and triage</span>
+                  </button>
+                  <div class="case-body" id="case-forty-tickets" hidden>
+                    <dl class="case-facts">
+                  <div><dt>Role</dt><dd class="ph">your part in it</dd></div>
+                  <div><dt>Constraints</dt><dd class="ph">time, scope, what you could not change</dd></div>
+                  <div><dt>Shipped</dt><dd class="ph">what actually went out</dd></div>
+                  <div><dt>Moved</dt><dd class="ph">the number that changed</dd></div>
+                    </dl>
+                    <div class="case-prose">
+                      <p class="ph">Placeholder &mdash; the situation in two or three sentences: what
+                        existed, who it failed, and why it was worth changing.</p>
+                      <p class="ph">Placeholder &mdash; the decision that mattered, and what it cost.</p>
+                    </div>
+                    <figure class="case-margin">
+                      <div class="case-margin__slot" aria-hidden="true"></div>
+                      <figcaption>process artefact &mdash; pending</figcaption>
+                    </figure>
+                  </div>
+                </li>
+                <li>
+                  <button class="plate" type="button" data-case="mobile-parity" aria-haspopup="dialog">
+                    <span class="plate__shot" style="--c:#D94A63;--c2:#A93B51"></span>
+                    <span class="plate__title">Mobile parity</span>
+                    <span class="plate__meta">Responsive rebuild</span>
+                  </button>
+                  <div class="case-body" id="case-mobile-parity" hidden>
+                    <dl class="case-facts">
+                  <div><dt>Role</dt><dd class="ph">your part in it</dd></div>
+                  <div><dt>Constraints</dt><dd class="ph">time, scope, what you could not change</dd></div>
+                  <div><dt>Shipped</dt><dd class="ph">what actually went out</dd></div>
+                  <div><dt>Moved</dt><dd class="ph">the number that changed</dd></div>
+                    </dl>
+                    <div class="case-prose">
+                      <p class="ph">Placeholder &mdash; the situation in two or three sentences: what
+                        existed, who it failed, and why it was worth changing.</p>
+                      <p class="ph">Placeholder &mdash; the decision that mattered, and what it cost.</p>
+                    </div>
+                    <figure class="case-margin">
+                      <div class="case-margin__slot" aria-hidden="true"></div>
+                      <figcaption>process artefact &mdash; pending</figcaption>
+                    </figure>
+                  </div>
+                </li>
+            </ul>
           </div>
         </div>
         <div class="face face--back"><div class="paper paper--inner"></div></div>
@@ -107,9 +210,46 @@
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content">
+          <div class="content content--page">
             <h2 class="display">Experience</h2>
-            <p class="lede">Where the engineering rigour comes from.</p>
+            <p class="lede lede--tight">Where the engineering rigour comes from.</p>
+
+            <!-- From the resume. Deliberately NOT carried over from it: the phone
+                 number and street location. This page is public and indexable, and
+                 Contact is its own sheet. -->
+            <ol class="timeline">
+              <li class="tl-item">
+                <p class="tl-when">2022 &mdash; now</p>
+                <h3 class="tl-what">Software Test Engineer</h3>
+                <p class="tl-where">Apple, Vision Products Group</p>
+                <p class="tl-note">Quality and test infrastructure for Vision Pro APIs &mdash; Portals, LowLevelMesh, ManipulationComponent &mdash; plus internal tools for Reality Composer Pro. Automation cut manual debugging by 95%.</p>
+              </li>
+              <li class="tl-item">
+                <p class="tl-when">2021 &mdash; 2022</p>
+                <h3 class="tl-what">Software Engineer</h3>
+                <p class="tl-where">IBM</p>
+                <p class="tl-note">Led six new grads building the UI for an automated labelling framework, and was the liaison between engineers and UX designers on the DB2 Warehouse Console.</p>
+              </li>
+              <li class="tl-item">
+                <p class="tl-when">2019 &mdash; 2020</p>
+                <h3 class="tl-what">Engineering internships</h3>
+                <p class="tl-where">Autodesk &middot; CNBC</p>
+                <p class="tl-note">An AutoCAD web add-in at Autodesk; automated performance testing at CNBC, 80% faster to run.</p>
+              </li>
+              <li class="tl-item">
+                <p class="tl-when">before that</p>
+                <h3 class="tl-what">Cognitive Science, B.A.</h3>
+                <p class="tl-where">Johns Hopkins, minor in Computer Science</p>
+                <p class="tl-note">Ran UX studies on learning in children with autism in the Intuitive Computing Lab.</p>
+              </li>
+            </ol>
+
+            <div class="toolbox">
+              <h3 class="toolbox__label">Build</h3>
+              <ul class="toolbox__set"><li>Swift</li><li>Python</li><li>C / C++</li><li>Java</li><li>Git</li><li>CI/CD</li><li>REST APIs</li></ul>
+              <h3 class="toolbox__label">Tools</h3>
+              <ul class="toolbox__set"><li>Xcode</li><li>RealityKit</li><li>Reality Composer Pro</li><li>Jira</li><li>Jenkins</li><li>Claude Code</li></ul>
+            </div>
           </div>
         </div>
         <div class="face face--back"><div class="paper paper--inner"></div></div>
@@ -121,23 +261,68 @@
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content">
+          <!-- content--art makes this sheet a flex column so the grid can take
+               whatever height the heading leaves. See .content--art in the CSS. -->
+          <div class="content content--page content--art">
             <h2 class="display">Art</h2>
-            <p class="lede">Eighteen pieces, and counting.</p>
+            <p class="lede lede--tight">Eighteen pieces, and counting.</p>
+
+            <!-- Generated from assets/art/manifest.json, which the art pipeline in
+                 assets/art/README.md writes. Adding a piece is a re-run there and a
+                 copy of display/ + thumb/ + manifest.json, not an edit here.
+                 A contact sheet, not a gallery: the tiles are small because clicking
+                 one is how you actually look at it. No captions, by decision. -->
+            <ul class="stickersheet">
+                <li><button class="art-piece" type="button" data-art="img-1002" data-orient="portrait" aria-label="Artwork 1" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/img-1002.jpg" alt="Artwork 1" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-10" data-orient="portrait" aria-label="Artwork 2" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-10.jpg" alt="Artwork 2" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-11" data-orient="landscape" aria-label="Artwork 3" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-11.jpg" alt="Artwork 3" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-12" data-orient="portrait" aria-label="Artwork 4" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-12.jpg" alt="Artwork 4" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-13" data-orient="portrait" aria-label="Artwork 5" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-13.jpg" alt="Artwork 5" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-14" data-orient="portrait" aria-label="Artwork 6" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-14.jpg" alt="Artwork 6" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-15" data-orient="portrait" aria-label="Artwork 7" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-15.jpg" alt="Artwork 7" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-16" data-orient="landscape" aria-label="Artwork 8" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-16.jpg" alt="Artwork 8" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-17" data-orient="portrait" aria-label="Artwork 9" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-17.jpg" alt="Artwork 9" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-18" data-orient="portrait" aria-label="Artwork 10" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-18.jpg" alt="Artwork 10" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-2" data-orient="portrait" aria-label="Artwork 11" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-2.jpg" alt="Artwork 11" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-4" data-orient="portrait" aria-label="Artwork 12" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-4.jpg" alt="Artwork 12" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-5" data-orient="portrait" aria-label="Artwork 13" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-5.jpg" alt="Artwork 13" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-6" data-orient="portrait" aria-label="Artwork 14" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-6.jpg" alt="Artwork 14" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-7" data-orient="portrait" aria-label="Artwork 15" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-7.jpg" alt="Artwork 15" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-8" data-orient="landscape" aria-label="Artwork 16" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-8.jpg" alt="Artwork 16" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-9" data-orient="portrait" aria-label="Artwork 17" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-9.jpg" alt="Artwork 17" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork" data-orient="landscape" aria-label="Artwork 18" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork.jpg" alt="Artwork 18" decoding="async"></button></li>
+            </ul>
           </div>
         </div>
         <div class="face face--back"><div class="paper paper--inner"></div></div>
       </div>
-      <button class="flutter-zone" type="button" aria-label="Turn to Resume"></button>
+      <button class="flutter-zone" type="button" aria-label="Turn to Contact"></button>
     </article>
 
-    <article class="sheet" data-page="resume" aria-label="Resume">
+    <article class="sheet" data-page="contact" aria-label="Contact">
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content">
-            <h2 class="display">Resume</h2>
-            <p class="lede">The one-page version.</p>
+          <div class="content content--page content--contact">
+            <h2 class="display">Contact</h2>
+            <!-- The handwritten greeting stands in for the lede here, so it inherits
+                 the rule that hides .lede on short viewports -- it is the warmth of
+                 the page, not its information. -->
+            <p class="lede lede--tight hand">Say hello &mdash;</p>
+
+            <!-- TWO PLACEHOLDERS TO SWAP: the mailto and the LinkedIn href/label.
+                 Both carry class="ph" so an unfinished address reads as unfinished
+                 on the page and cannot be shipped by accident. Drop the class once
+                 the real values are in. The GitHub link is real. -->
+            <ul class="reach">
+              <li><a class="reach__link ph" href="mailto:your-address@example.com">your-address@example.com</a></li>
+              <li><a class="reach__link ph" href="https://www.linkedin.com/in/your-handle">linkedin.com/in/your-handle</a></li>
+              <li><a class="reach__link" href="https://github.com/aoduru">github.com/aoduru</a></li>
+            </ul>
+
+            <!-- Resume was cut as a sheet and as a hosted PDF, so the question it
+                 used to answer lands here instead. -->
+            <p class="reach__note">Looking for my resume? Ask, and I&rsquo;ll send it over.</p>
           </div>
         </div>
         <div class="face face--back"><div class="paper paper--inner"></div></div>
@@ -149,9 +334,21 @@
   <div class="spine spine--front" aria-hidden="true"></div>
 </main>
 
-<p class="hint" id="hint">Lift the bottom edge, or use the nav. <kbd>←</kbd> <kbd>→</kbd> also work.</p>
+<!-- The card sits OUTSIDE .journal-viewport deliberately. That element carries
+     perspective: 1700px, and a perspective ancestor becomes the containing block
+     for position:fixed descendants -- nested inside it a fixed overlay would be
+     positioned against the book rather than the window. Out here it also escapes
+     .face__flat's overflow:hidden and the sheet's own rotation. -->
+<div class="scrim" id="scrim" hidden></div>
+<div class="insert" id="insert" role="dialog" aria-modal="true" hidden>
+  <button class="insert__close" id="insertClose" type="button" aria-label="Close">&times;</button>
+  <div class="insert__body" id="insertBody"></div>
+</div>
+
+<p class="hint" id="hint">Lift the bottom edge, or use the nav. <kbd>↓</kbd> <kbd>↑</kbd> also work.</p>
 
 <script src="js/bookEngine.js"></script>
+<script src="js/cardOverlay.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

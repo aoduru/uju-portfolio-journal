@@ -142,7 +142,14 @@
       if (zone) zone.addEventListener('click', function () { self.goTo(i + 1); });
     });
 
+    /* This listener is on the document, so it fires even when something else
+       is on top. An open card would otherwise riffle the book behind itself.
+       The engine is not told what a card is -- the owner passes a predicate,
+       and this file stays ignorant of content as advertised above.
+       The wheel and touch handlers below need no such guard: they are bound to
+       the book itself, and the scrim covers it. */
     document.addEventListener('keydown', function (e) {
+      if (self.opts.blocked && self.opts.blocked()) return;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { self.next(); }
       if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { self.prev(); }
     });
