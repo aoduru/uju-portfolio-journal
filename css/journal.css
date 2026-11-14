@@ -470,33 +470,29 @@ kbd {
   color: var(--ink-soft);
 }
 
-/* ---------- experience ---------- */
+/* ---------- experience ----------
+   Two columns, because the sheet is landscape and a single column used half
+   of it: the real history is four entries with a line each, and stacked they
+   overran a 560px sheet by 178px. One long spine does not survive the split,
+   so the tape binds each entry instead -- same material, any column count. */
 .timeline {
   list-style: none;
-  position: relative;
   margin: clamp(.6rem, 2.2vh, 1.5rem) 0 0;
-  padding: 0 0 0 2.2rem;
-  max-width: 54ch;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(.45rem, 1.4vh, 1rem) clamp(1.2rem, 3.2vw, 2.6rem);
+  max-width: 780px;
 }
-/* the washi spine -- one strip of tape, the page's whole handmade budget */
-.timeline::before {
-  content: "";
-  position: absolute;
-  left: .55rem; top: .3rem; bottom: .3rem;
-  width: 14px;
-  background: rgba(143, 184, 224, .45);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35);
-  transform: rotate(.4deg);
-}
-.tl-item { position: relative; margin-bottom: clamp(.35rem, 1.3vh, 1rem); }
+.tl-item { position: relative; padding-left: 1.75rem; }
 .tl-item::before {
   content: "";
   position: absolute;
-  left: -1.75rem; top: .45rem;
-  width: 11px; height: 11px;
-  border-radius: 50%;
-  background: var(--page);
-  box-shadow: 0 0 0 2px var(--cover-edge);
+  left: .3rem; top: .15rem; bottom: .15rem;
+  width: 13px;
+  background: rgba(143, 184, 224, .45);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35);
+  transform: rotate(.5deg);
 }
 .tl-when {
   font-family: var(--font-loop);
@@ -505,7 +501,13 @@ kbd {
   margin: 0;
 }
 .tl-what { margin: 0; font-size: .95rem; font-weight: 600; line-height: 1.25; }
-.tl-note { margin: .1rem 0 0; font-size: .84rem; line-height: 1.45; color: var(--ink-soft); }
+/* Employer sits under the role, not beside it: at this column width a
+   "Role — Employer" line wrapped mid-name on every entry. */
+.tl-where { margin: 0; font-size: .8rem; font-weight: 500; color: var(--cover-edge); line-height: 1.3; }
+/* Fluid with width, not just height. The two columns narrow to ~290px on an
+   iPad in portrait, where a fixed .84rem wrapped every note an extra line and
+   put Experience 24px over the sheet. */
+.tl-note { margin: .1rem 0 0; font-size: clamp(.76rem, 1.05vw, .84rem); line-height: 1.42; color: var(--ink-soft); }
 
 /* The skim layer. Plain on purpose: this is the part a recruiter scans, and
    craft here would get in the way of reading it fast. */
@@ -643,7 +645,7 @@ kbd {
   /* The sheet is min(520px, 60vh) here -- roughly 380px of usable height on a
      375x812 phone -- and .face__flat still clips. Every grid below is retuned
      to that budget rather than allowed to run off the bottom of the page. */
-  .content--page { padding-top: 1.9rem; }
+  .content--page { padding-top: 1.6rem; }
   .contents-grid { gap: .7rem .8rem; }
   .plate__shot   { height: 56px; }
   .plate::before { width: 42px; height: 14px; }
@@ -655,8 +657,15 @@ kbd {
   .art-piece__shot    { height: 36px; }
   .art-piece__cap     { font-size: .85rem; }
 
-  .tl-item { margin-bottom: .45rem; }
-  .tl-note { font-size: .8rem; }
+  .timeline { grid-template-columns: 1fr; gap: .5rem; }
+  .tl-note  { font-size: .8rem; }
+  /* Four entries with a line each is ~675px of content against a 568px sheet
+     even on a tall phone, so on phones Experience falls back to the spine --
+     dates, role, employer -- and the toolbox carries the skills. Keeping just
+     the current role's line still overran by 107px at 375x812. Measured. */
+  .tl-note { display: none; }
+  .toolbox__set li { font-size: .68rem; padding: .13rem .4rem; }
+  .toolbox__set    { gap: .25rem .3rem; margin-bottom: .45rem; }
   .case-facts { grid-template-columns: 1fr; gap: .5rem; }
 }
 
@@ -753,8 +762,14 @@ kbd {
 
   .timeline { margin-top: .6rem; }
   .tl-item  { margin-bottom: .3rem; }
+  /* Below 700px tall even the current role's description does not fit: the
+     four entries plus skills come to 531px against a 467px sheet on a 375x667
+     phone. Experience falls back to the spine -- dates, role, employer -- with
+     the toolbox still carrying the skills. Measured, not guessed. */
+  .tl-note  { display: none; }
   .tl-when  { font-size: .95rem; }
   .tl-what  { font-size: .9rem; }
+  .tl-where { font-size: .74rem; }
   .tl-note  { font-size: .76rem; line-height: 1.32; }
 
   .toolbox        { margin-top: .55rem; padding-top: .5rem; }
