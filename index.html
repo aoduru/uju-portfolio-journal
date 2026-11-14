@@ -261,7 +261,9 @@
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content content--page">
+          <!-- content--art makes this sheet a flex column so the grid can take
+               whatever height the heading leaves. See .content--art in the CSS. -->
+          <div class="content content--page content--art">
             <h2 class="display">Art</h2>
             <p class="lede lede--tight">Eighteen pieces, and counting.</p>
 

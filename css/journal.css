@@ -544,13 +544,15 @@ kbd {
 .stickersheet {
   list-style: none;
   display: grid;
-  /* Nine across, two down -- 18 exactly, no ragged row. Narrow columns buy
-     the height to make the tile PORTRAIT, which is the shape most of the work
-     is in (the manifest has them around 0.70), so the crop stops fighting
-     the art. */
-  grid-template-columns: repeat(9, minmax(0, 1fr));
-  gap: clamp(.35rem, 1vh, .6rem) clamp(.35rem, 1vw, .6rem);
-  margin: clamp(1rem, 2.5vh, 1.5rem) 0 0;
+  /* Six across, three down -- 18 exactly, no ragged row. Nine columns over
+     two rows left ~150px of bare paper under the grid and made every piece
+     thumbnail-sized; six columns spend that height on the art instead, at
+     roughly 124px a side rather than 79. */
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(.3rem, .8vh, .5rem) clamp(.35rem, 1vw, .6rem);
+  /* Tighter than the other sheets' content gap: three rows of art need the
+     height more than the heading needs the air. */
+  margin: clamp(.6rem, 1.6vh, 1rem) 0 0;
   padding: 0;
 }
 .art-piece {
@@ -558,14 +560,104 @@ kbd {
   border-radius: 2px;
   line-height: 0;            /* no descender gap under the image */
 }
+
+/* ---------- taped down ----------
+   Two strips per piece, across opposite corners, the way a photo actually
+   goes into a scrapbook. The pseudo-elements sit inside the button so they
+   inherit its tilt and its hover lift -- the tape travels with the photo
+   instead of staying flat on the page while the photo peels off it.
+
+   The variants below are what stop eighteen pieces looking stamped out: the
+   corner pair, the angle, the length and the colour all move on different
+   cycles (2, 3, 4, 5, 7), so the pattern does not visibly repeat across a
+   row or down a column. */
+/* ---------- the grid takes the leftover height ----------
+   Sizing a tile by aspect-ratio ties its height to the sheet's WIDTH, and the
+   two do not move together: at 1024x768 three rows of square tiles ran 10px
+   past the sheet, while at 768x1024 the same rule left 111px of bare paper
+   under the grid, because the narrow sheet made the tiles short. Both are the
+   same bug.
+
+   So the sheet becomes a flex column and the grid takes `flex: 1` with three
+   equal rows. The tiles are then exactly as tall as the heading leaves room
+   for -- which means the grid can never overrun the sheet and can never leave
+   a gap under itself, at any viewport. Tiles go portrait on a narrow sheet and
+   landscape on a short wide one, both of which suit the work. */
+/* height: 100% is the load-bearing line. .content is position: relative with
+   auto height, so a flex column built on it has no height to distribute and
+   `1fr` rows fall back to the images' own proportions -- which blew the grid
+   out to 179px rows and 167px past the sheet. .face__flat is inset: 0, so
+   100% here is exactly the sheet, and the leftover is real. */
+.content--art {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.content--art .stickersheet {
+  flex: 1 1 auto;
+  /* Without this a flex item refuses to shrink below its content height, and
+     the overrun comes straight back. */
+  min-height: 0;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+}
+.content--art .stickersheet li { min-height: 0; }
+.content--art .art-piece       { display: block; height: 100%; }
+.content--art .art-piece__shot { height: 100%; }
+
+.art-piece::before,
+.art-piece::after {
+  content: "";
+  position: absolute;
+  z-index: 3;
+  width: 28px;
+  height: 10px;
+  pointer-events: none;
+  /* The first version was a flat rgba(253,245,243,.62) -- within a few
+     percent of the paper, so over the photo's white mount it read as a notch
+     cut out of the corner rather than as tape laid on top. Tape reads as tape
+     because light runs along it: a band of colour down the middle, lighter at
+     both long edges, plus a shadow under it. --tape carries just the hue, so
+     the variants below recolour it without restating the gradient. */
+  --tape: 211 202 193;
+  background: linear-gradient(135deg,
+                rgba(255, 255, 255, .3),
+                rgb(var(--tape) / .62) 48%,
+                rgba(255, 255, 255, .26));
+  box-shadow: 0 1px 2px rgba(99, 67, 67, .2);
+}
+/* Pulled in from -9/-5 to -6/-3: the strip now lies ACROSS the corner, half
+   on the photo and half on the paper, instead of hovering off the edge. */
+.art-piece::before { top: -3px;    left: -6px;  transform: rotate(-45deg); }
+.art-piece::after  { bottom: -3px; right: -6px; transform: rotate(-45deg); }
+
+/* the other diagonal */
+.stickersheet li:nth-child(2n) .art-piece::before { top: -3px;    left: auto; right: -6px; transform: rotate(45deg); }
+.stickersheet li:nth-child(2n) .art-piece::after  { bottom: -3px; right: auto; left: -6px; transform: rotate(45deg); }
+
+/* both strips along the top, like it was hung rather than boxed in */
+.stickersheet li:nth-child(5n) .art-piece::after {
+  bottom: auto; top: -3px; right: -6px; transform: rotate(45deg);
+}
+/* one strip only -- a piece that got less care */
+.stickersheet li:nth-child(7n) .art-piece::after { display: none; }
+
+/* length and angle jitter, on their own cycles */
+.stickersheet li:nth-child(3n) .art-piece::before { width: 23px; transform: rotate(-38deg); }
+.stickersheet li:nth-child(4n) .art-piece::after  { width: 33px; transform: rotate(-52deg); }
+.stickersheet li:nth-child(3n) .art-piece::after  { height: 9px; }
+
+/* a few pieces taped with the blue washi instead of the clear stuff */
+.stickersheet li:nth-child(4n + 1) .art-piece::before,
+.stickersheet li:nth-child(4n + 1) .art-piece::after { --tape: 143 184 224; }
+.stickersheet li:nth-child(6n) .art-piece::before    { --tape: 255 226 122; }
 /* Most of these are portraits on a tall canvas going into a wide tile, so the
    crop is anchored at the top: centred, it took the heads off. */
 .art-piece__shot {
   display: block;
   width: 100%;
-  /* 0.70, which is what the manifest says most of these actually are, so a
-     portrait is shown nearly whole rather than cropped to fit a tidier box. */
-  aspect-ratio: 7 / 10;
+  /* No aspect-ratio: .content--art below drives the height off the space the
+     sheet actually has. The crop is top-anchored and costs nothing, because
+     clicking shows the whole piece. */
   object-fit: cover;
   /* Portraits are cropped from the top so the crop keeps faces; a landscape
      piece has nothing at the top worth favouring, and one of these is a 2.18
@@ -662,11 +754,19 @@ kbd {
   /* Six columns leaves a 50px plate at this width, which is smaller than the
      thumbnails were ever meant to be. Four wider ones over five rows fit the
      same eighteen pieces into less height. */
-  /* Six across, three down -- 18 exactly. Square here: a portrait tile over
-     three rows does not fit the phone sheet. */
-  .stickersheet    { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .3rem; }
+  /* Five across, four down. Six columns on a 311px sheet is a 48px piece;
+     five gives it 58px and the last row simply runs three short. */
+  /* Four across, five down. Five columns on a 311px sheet gave a 48px-wide
+     piece, which with the full height to fill came out as a sliver; four
+     gives it 68px. The last row runs two short, and a ragged row of taped
+     photos is what a real page looks like anyway. */
+  .stickersheet    { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .35rem; }
+  .content--art .stickersheet { grid-template-rows: repeat(5, minmax(0, 1fr)); }
   .art-piece       { padding: 3px; }
-  .art-piece__shot { aspect-ratio: 1 / 1; }
+  /* Tape scaled to the smaller piece, or it covers the art. */
+  .art-piece::before, .art-piece::after { width: 17px; height: 7px; }
+  .art-piece::before { top: -2px; left: -4px; }
+  .art-piece::after  { bottom: -2px; right: -4px; }
 
   .timeline { grid-template-columns: 1fr; gap: .5rem; }
   .tl-note  { font-size: .8rem; }
@@ -736,13 +836,26 @@ kbd {
 
 /* Art: the piece shown large IS the content, so the card carries it and the
    title and nothing else. No year, no medium, no wall label. */
-.insert--art { width: min(560px, 92vw); }
+/* The card is sized BY the image, not the other way round. A fixed width got
+   the worst of both: a portrait was capped by max-height long before it ran
+   out of width, so an 880px card showed a 468px-wide picture floating in two
+   empty margins. fit-content means the card is whatever the piece needs --
+   narrow for a portrait, wide for a landscape -- and the art is never smaller
+   than the viewport allows. The padding is tighter than a case study's for
+   the same reason: nothing here is being read. */
+.insert--art {
+  width: fit-content;
+  max-width: min(900px, 94vw);
+  padding: clamp(.9rem, 1.6vw, 1.3rem);
+}
 /* The whole piece, uncropped -- the card exists so the thumbnail's crop stops
-   mattering. max-height keeps a tall portrait inside the viewport. */
+   mattering. Height is the binding constraint for a portrait, so it gets as
+   much of the viewport as the card's own max-height (86vh) leaves. */
 .insert__art {
   display: block;
-  width: 100%;
-  max-height: 72vh;
+  width: auto;
+  max-width: 100%;
+  max-height: 78vh;
   object-fit: contain;
   border-radius: 2px;
   background: var(--page-2);
