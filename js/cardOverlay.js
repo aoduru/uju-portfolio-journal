@@ -68,13 +68,25 @@
 
   CardOverlay.prototype._artBody = function (btn) {
     var frag = document.createDocumentFragment();
-    var shot = btn.querySelector('.art-piece__shot').cloneNode(true);
-    shot.className = 'insert__art';          // keeps the inline --c / --c2
-    frag.appendChild(shot);
+    var thumb = btn.querySelector('.art-piece__shot');
+    var alt = thumb.getAttribute('alt') || '';
+
+    /* The card swaps the thumbnail for the full-size file, so the grid stays
+       cheap: 25 thumbnails are ~620KB together, and the ~180KB original is
+       only fetched when someone actually asks to see the piece. */
+    var img = document.createElement('img');
+    img.className = 'insert__art';
+    img.src = thumb.getAttribute('src').replace('/thumb/', '/display/');
+    img.alt = alt;
+    frag.appendChild(img);
+
+    /* No caption, by decision -- the piece shown large is the content. The
+       dialog still needs a name, so the alt text labels it for screen
+       readers without putting a wall label on the page. */
     var h = document.createElement('h2');
-    h.className = 'insert__title insert__title--art';
+    h.className = 'sr-only';
     h.id = 'insertTitle';
-    h.textContent = btn.querySelector('.art-piece__cap').textContent;
+    h.textContent = alt;
     frag.appendChild(h);
     return frag;
   };

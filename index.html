@@ -265,65 +265,30 @@
             <h2 class="display">Art</h2>
             <p class="lede lede--tight">Eighteen pieces, and counting.</p>
 
-            <!-- PLACEHOLDER titles and flat colour stand-ins. The real eighteen are
-                 pending; swapping them is an edit to this list and nothing else.
-                 Clicking opens the same card the case studies use &mdash; the piece
-                 large, with the title and nothing else. -->
+            <!-- Generated from assets/art/manifest.json, which the art pipeline in
+                 assets/art/README.md writes. Adding a piece is a re-run there and a
+                 copy of display/ + thumb/ + manifest.json, not an edit here.
+                 A contact sheet, not a gallery: the tiles are small because clicking
+                 one is how you actually look at it. No captions, by decision. -->
             <ul class="stickersheet">
-                <li><button class="art-piece" type="button" data-art="peaches" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#F3E3DE;--c2:#DCA4A4"></span>
-                  <span class="art-piece__cap">Peaches</span></button></li>
-                <li><button class="art-piece" type="button" data-art="blue-square" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#FDF5F3;--c2:#8FB8E0"></span>
-                  <span class="art-piece__cap">Blue square</span></button></li>
-                <li><button class="art-piece" type="button" data-art="big-star" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#F3E3DE;--c2:#D94A63"></span>
-                  <span class="art-piece__cap">Big star</span></button></li>
-                <li><button class="art-piece" type="button" data-art="study-ink" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#FFFDF8;--c2:#634343"></span>
-                  <span class="art-piece__cap">Study, ink</span></button></li>
-                <li><button class="art-piece" type="button" data-art="garden" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#DCA4A4;--c2:#FFE27A"></span>
-                  <span class="art-piece__cap">Garden</span></button></li>
-                <li><button class="art-piece" type="button" data-art="dusk" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#8FB8E0;--c2:#634343"></span>
-                  <span class="art-piece__cap">Dusk</span></button></li>
-                <li><button class="art-piece" type="button" data-art="kitchen" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#FDF5F3;--c2:#C98E8E"></span>
-                  <span class="art-piece__cap">Kitchen</span></button></li>
-                <li><button class="art-piece" type="button" data-art="two-chairs" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#F3E3DE;--c2:#5E8CBC"></span>
-                  <span class="art-piece__cap">Two chairs</span></button></li>
-                <li><button class="art-piece" type="button" data-art="lagos" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#FFE27A;--c2:#D94A63"></span>
-                  <span class="art-piece__cap">Lagos</span></button></li>
-                <li><button class="art-piece" type="button" data-art="self" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#F3DEDA;--c2:#8A6A66"></span>
-                  <span class="art-piece__cap">Self</span></button></li>
-                <li><button class="art-piece" type="button" data-art="window" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#FDF5F3;--c2:#8FB8E0"></span>
-                  <span class="art-piece__cap">Window</span></button></li>
-                <li><button class="art-piece" type="button" data-art="red-room" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#D94A63;--c2:#FFE27A"></span>
-                  <span class="art-piece__cap">Red room</span></button></li>
-                <li><button class="art-piece" type="button" data-art="cousins" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#F3E3DE;--c2:#C98E8E"></span>
-                  <span class="art-piece__cap">Cousins</span></button></li>
-                <li><button class="art-piece" type="button" data-art="rain" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#8FB8E0;--c2:#FDF5F3"></span>
-                  <span class="art-piece__cap">Rain</span></button></li>
-                <li><button class="art-piece" type="button" data-art="market" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#FFE27A;--c2:#634343"></span>
-                  <span class="art-piece__cap">Market</span></button></li>
-                <li><button class="art-piece" type="button" data-art="still-life" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#FDF5F3;--c2:#DCA4A4"></span>
-                  <span class="art-piece__cap">Still life</span></button></li>
-                <li><button class="art-piece" type="button" data-art="night-bus" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#634343;--c2:#8FB8E0"></span>
-                  <span class="art-piece__cap">Night bus</span></button></li>
-                <li><button class="art-piece" type="button" data-art="hands" aria-haspopup="dialog">
-                  <span class="art-piece__shot" style="--c:#F3DEDA;--c2:#D94A63"></span>
-                  <span class="art-piece__cap">Hands</span></button></li>
+                <li><button class="art-piece" type="button" data-art="img-1002" data-orient="portrait" aria-label="Artwork 1" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/img-1002.jpg" alt="Artwork 1" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-10" data-orient="portrait" aria-label="Artwork 2" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-10.jpg" alt="Artwork 2" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-11" data-orient="landscape" aria-label="Artwork 3" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-11.jpg" alt="Artwork 3" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-12" data-orient="portrait" aria-label="Artwork 4" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-12.jpg" alt="Artwork 4" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-13" data-orient="portrait" aria-label="Artwork 5" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-13.jpg" alt="Artwork 5" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-14" data-orient="portrait" aria-label="Artwork 6" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-14.jpg" alt="Artwork 6" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-15" data-orient="portrait" aria-label="Artwork 7" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-15.jpg" alt="Artwork 7" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-16" data-orient="landscape" aria-label="Artwork 8" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-16.jpg" alt="Artwork 8" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-17" data-orient="portrait" aria-label="Artwork 9" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-17.jpg" alt="Artwork 9" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-18" data-orient="portrait" aria-label="Artwork 10" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-18.jpg" alt="Artwork 10" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-2" data-orient="portrait" aria-label="Artwork 11" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-2.jpg" alt="Artwork 11" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-4" data-orient="portrait" aria-label="Artwork 12" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-4.jpg" alt="Artwork 12" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-5" data-orient="portrait" aria-label="Artwork 13" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-5.jpg" alt="Artwork 13" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-6" data-orient="portrait" aria-label="Artwork 14" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-6.jpg" alt="Artwork 14" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-7" data-orient="portrait" aria-label="Artwork 15" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-7.jpg" alt="Artwork 15" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-8" data-orient="landscape" aria-label="Artwork 16" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-8.jpg" alt="Artwork 16" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork-9" data-orient="portrait" aria-label="Artwork 17" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork-9.jpg" alt="Artwork 17" decoding="async"></button></li>
+                <li><button class="art-piece" type="button" data-art="untitled-artwork" data-orient="landscape" aria-label="Artwork 18" aria-haspopup="dialog"><img class="art-piece__shot" src="assets/art/thumb/untitled-artwork.jpg" alt="Artwork 18" decoding="async"></button></li>
             </ul>
           </div>
         </div>

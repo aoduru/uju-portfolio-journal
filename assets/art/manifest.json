@@ -1,0 +1,182 @@
+[
+  {
+    "slug": "img-1002",
+    "title": "",
+    "display": "assets/art/display/img-1002.jpg",
+    "thumb": "assets/art/thumb/img-1002.jpg",
+    "width": 1156,
+    "height": 1600,
+    "aspect": 0.723,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-10",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-10.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-10.jpg",
+    "width": 1112,
+    "height": 1600,
+    "aspect": 0.695,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-11",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-11.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-11.jpg",
+    "width": 1600,
+    "height": 1236,
+    "aspect": 1.294,
+    "orientation": "landscape"
+  },
+  {
+    "slug": "untitled-artwork-12",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-12.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-12.jpg",
+    "width": 1112,
+    "height": 1600,
+    "aspect": 0.695,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-13",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-13.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-13.jpg",
+    "width": 1112,
+    "height": 1600,
+    "aspect": 0.695,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-14",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-14.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-14.jpg",
+    "width": 1112,
+    "height": 1600,
+    "aspect": 0.695,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-15",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-15.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-15.jpg",
+    "width": 1112,
+    "height": 1600,
+    "aspect": 0.695,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-16",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-16.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-16.jpg",
+    "width": 1600,
+    "height": 1066,
+    "aspect": 1.501,
+    "orientation": "landscape"
+  },
+  {
+    "slug": "untitled-artwork-17",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-17.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-17.jpg",
+    "width": 1131,
+    "height": 1600,
+    "aspect": 0.707,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-18",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-18.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-18.jpg",
+    "width": 1236,
+    "height": 1600,
+    "aspect": 0.772,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-2",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-2.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-2.jpg",
+    "width": 1490,
+    "height": 1600,
+    "aspect": 0.931,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-4",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-4.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-4.jpg",
+    "width": 1199,
+    "height": 1600,
+    "aspect": 0.749,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-5",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-5.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-5.jpg",
+    "width": 1112,
+    "height": 1600,
+    "aspect": 0.695,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-6",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-6.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-6.jpg",
+    "width": 1112,
+    "height": 1600,
+    "aspect": 0.695,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-7",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-7.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-7.jpg",
+    "width": 1112,
+    "height": 1600,
+    "aspect": 0.695,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork-8",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-8.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-8.jpg",
+    "width": 1600,
+    "height": 733,
+    "aspect": 2.183,
+    "orientation": "landscape"
+  },
+  {
+    "slug": "untitled-artwork-9",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork-9.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork-9.jpg",
+    "width": 1112,
+    "height": 1600,
+    "aspect": 0.695,
+    "orientation": "portrait"
+  },
+  {
+    "slug": "untitled-artwork",
+    "title": "",
+    "display": "assets/art/display/untitled-artwork.jpg",
+    "thumb": "assets/art/thumb/untitled-artwork.jpg",
+    "width": 1600,
+    "height": 1035,
+    "aspect": 1.546,
+    "orientation": "landscape"
+  }
+]

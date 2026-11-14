@@ -544,32 +544,41 @@ kbd {
 .stickersheet {
   list-style: none;
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: clamp(.5rem, 1.4vh, .85rem) clamp(.5rem, 1.4vw, .9rem);
+  /* Nine across, two down -- 18 exactly, no ragged row. Narrow columns buy
+     the height to make the tile PORTRAIT, which is the shape most of the work
+     is in (the manifest has them around 0.70), so the crop stops fighting
+     the art. */
+  grid-template-columns: repeat(9, minmax(0, 1fr));
+  gap: clamp(.35rem, 1vh, .6rem) clamp(.35rem, 1vw, .6rem);
   margin: clamp(1rem, 2.5vh, 1.5rem) 0 0;
   padding: 0;
 }
 .art-piece {
-  padding: 5px 5px 6px;
+  padding: 4px;
   border-radius: 2px;
+  line-height: 0;            /* no descender gap under the image */
 }
+/* Most of these are portraits on a tall canvas going into a wide tile, so the
+   crop is anchored at the top: centred, it took the heads off. */
 .art-piece__shot {
   display: block;
-  height: clamp(44px, 7.5vh, 62px);
+  width: 100%;
+  /* 0.70, which is what the manifest says most of these actually are, so a
+     portrait is shown nearly whole rather than cropped to fit a tidier box. */
+  aspect-ratio: 7 / 10;
+  object-fit: cover;
+  /* Portraits are cropped from the top so the crop keeps faces; a landscape
+     piece has nothing at the top worth favouring, and one of these is a 2.18
+     panorama that loses its whole subject that way. */
+  object-position: 50% 20%;
   border-radius: 1px;
-  background: linear-gradient(152deg, var(--c), var(--c2));
-}
-.art-piece__cap {
-  display: block;
-  margin-top: .2rem;
-  font-family: var(--font-loop);
-  font-size: .92rem; line-height: 1.15;
-  color: var(--ink-soft);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  background: var(--page-2);
 }
 /* The angle keys off the LI, not the button. Each button is the only child of
    its li, so :nth-child on .art-piece matched 1 every time and all eighteen
    pieces sat at the same -2.2deg. */
+[data-orient="landscape"] .art-piece__shot { object-position: 50% 50%; }
+
 .art-piece                        { transform: rotate(-2.2deg); }
 .stickersheet li:nth-child(2n) .art-piece { transform: rotate(1.8deg); }
 .stickersheet li:nth-child(3n) .art-piece { transform: rotate(-.9deg); }
@@ -653,9 +662,11 @@ kbd {
   /* Six columns leaves a 50px plate at this width, which is smaller than the
      thumbnails were ever meant to be. Four wider ones over five rows fit the
      same eighteen pieces into less height. */
-  .stickersheet       { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .45rem .5rem; }
-  .art-piece__shot    { height: 36px; }
-  .art-piece__cap     { font-size: .85rem; }
+  /* Six across, three down -- 18 exactly. Square here: a portrait tile over
+     three rows does not fit the phone sheet. */
+  .stickersheet    { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .3rem; }
+  .art-piece       { padding: 3px; }
+  .art-piece__shot { aspect-ratio: 1 / 1; }
 
   .timeline { grid-template-columns: 1fr; gap: .5rem; }
   .tl-note  { font-size: .8rem; }
@@ -726,12 +737,21 @@ kbd {
 /* Art: the piece shown large IS the content, so the card carries it and the
    title and nothing else. No year, no medium, no wall label. */
 .insert--art { width: min(560px, 92vw); }
+/* The whole piece, uncropped -- the card exists so the thumbnail's crop stops
+   mattering. max-height keeps a tall portrait inside the viewport. */
 .insert__art {
   display: block;
   width: 100%;
-  aspect-ratio: 4 / 3;
+  max-height: 72vh;
+  object-fit: contain;
   border-radius: 2px;
-  background: linear-gradient(152deg, var(--c), var(--c2));
+  background: var(--page-2);
+}
+/* Labels the dialog without putting a caption on the page. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  clip-path: inset(50%); overflow: hidden; white-space: nowrap;
 }
 
 @media (prefers-reduced-motion: reduce) {
