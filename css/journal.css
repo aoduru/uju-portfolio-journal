@@ -860,6 +860,82 @@ kbd {
   border-radius: 2px;
   background: var(--page-2);
 }
+/* ---------- contact ----------
+   The sheet every other sheet points at, so it says three things and stops:
+   how to reach her, that a resume is available on request, and nothing else.
+   No form -- the site is static, so a form needs a third-party service behind
+   it, which is a dependency to keep alive and a place her mail would pass
+   through, for something a mailto already does. */
+/* The sheet is a flex column so the resume line can fall to the foot of the
+   page. Contact has little to say and should not be padded out to look busy,
+   but leaving 300px of blank paper under a short block reads as unfinished
+   rather than as calm. Pinning the aside to the bottom spends the space the
+   way a real page does -- note at the top, footnote at the foot -- without
+   inventing content to fill it. The heading stays put, so it still lines up
+   with the other four sheets as the book turns. */
+.content--contact {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.content--contact .hand {
+  font-family: var(--font-loop);
+  font-size: clamp(1.4rem, 3.2vw, 2rem);
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+.reach {
+  list-style: none;
+  margin: clamp(1.1rem, 3vh, 2rem) 0 0;
+  padding: 0;
+  display: grid;
+  gap: clamp(.45rem, 1.4vh, .9rem);
+  justify-items: start;
+}
+.reach__link {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: clamp(1.1rem, 2.6vw, 1.65rem);
+  color: var(--ink);
+  text-decoration: none;
+  /* The highlighter swipe is a BACKGROUND, not a pseudo-element behind the
+     text. A ::after at z-index -1 would need its own stacking context to sit
+     under the glyphs, and every way of getting one here (negative z-index,
+     mix-blend-mode) risks the same collapse the band chain suffers from.
+     A background paints under the text for free. */
+  background-image: linear-gradient(var(--high), var(--high));
+  background-repeat: no-repeat;
+  background-position: 0 86%;
+  background-size: 0% .38em;
+  transition: background-size .22s ease;
+}
+/* Invariant 7: iOS leaves :hover stuck on the last tapped element, so the
+   swipe is behind a hover query. :focus-visible is not -- a keyboard user
+   needs it on every device. */
+@media (hover: hover) and (pointer: fine) {
+  .reach__link:hover { background-size: 100% .38em; }
+}
+.reach__link:focus-visible {
+  background-size: 100% .38em;
+  outline: 2px solid var(--cover-edge);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+/* An unfinished address should look unfinished. .ph already carries the soft
+   italic; this just keeps the link sized with its siblings. */
+.reach__link.ph { font-weight: 400; }
+.reach__note {
+  /* auto, not a fixed gap: this is what drops it to the foot of the sheet. */
+  margin: auto 0 0;
+  padding-top: clamp(1.1rem, 3vh, 1.9rem);
+  color: var(--ink-soft);
+  font-size: .95rem;
+  max-width: 34ch;
+}
+@media (prefers-reduced-motion: reduce) {
+  .reach__link { transition: none; }
+}
+
 /* Labels the dialog without putting a caption on the page. */
 .sr-only {
   position: absolute; width: 1px; height: 1px;

@@ -303,14 +303,26 @@
       <div class="sheet__flutter">
         <div class="face face--front">
           <div class="paper paper--inner"></div>
-          <div class="content content--page">
+          <div class="content content--page content--contact">
             <h2 class="display">Contact</h2>
-            <p class="lede lede--tight">The shortest way to reach me.</p>
+            <!-- The handwritten greeting stands in for the lede here, so it inherits
+                 the rule that hides .lede on short viewports -- it is the warmth of
+                 the page, not its information. -->
+            <p class="lede lede--tight hand">Say hello &mdash;</p>
 
-            <!-- Deliberately a shell. Contact replaced the Resume sheet and its design
-                 is still open: form or a plain email link, where a request for the
-                 resume lands, and how loud the page goes. -->
-            <p class="ph ph--block">Placeholder &mdash; this sheet is still being designed.</p>
+            <!-- TWO PLACEHOLDERS TO SWAP: the mailto and the LinkedIn href/label.
+                 Both carry class="ph" so an unfinished address reads as unfinished
+                 on the page and cannot be shipped by accident. Drop the class once
+                 the real values are in. The GitHub link is real. -->
+            <ul class="reach">
+              <li><a class="reach__link ph" href="mailto:your-address@example.com">your-address@example.com</a></li>
+              <li><a class="reach__link ph" href="https://www.linkedin.com/in/your-handle">linkedin.com/in/your-handle</a></li>
+              <li><a class="reach__link" href="https://github.com/aoduru">github.com/aoduru</a></li>
+            </ul>
+
+            <!-- Resume was cut as a sheet and as a hosted PDF, so the question it
+                 used to answer lands here instead. -->
+            <p class="reach__note">Looking for my resume? Ask, and I&rsquo;ll send it over.</p>
           </div>
         </div>
         <div class="face face--back"><div class="paper paper--inner"></div></div>
