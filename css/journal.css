@@ -25,8 +25,9 @@
 
   --sage:       #8FB98C;
   --tan:        #B99E7C;
-  --teal:       #9CCAC6;
+  --teal:       #9CCAC6;   /* the washi tape, everywhere it appears */
   --mauve:      #B07BA6;
+  --rose:       #B5827E;
   --star:       #F0C640;
   --marker:     #C9452F;   /* annotation red -- underlines, circles */
   --high:       #F7DC7A;   /* highlighter */
@@ -526,7 +527,29 @@ h1.display {
   .plate, .art-piece { transition: none; }
 }
 
-/* ---------- case studies: the contents page ---------- */
+/* ---------- case studies: the contents page ----------
+   Two panels a page, stacked, each about a third of the page tall -- the
+   layout in Uju's sketch, not four small cards in a 2x2. The old grid was
+   two COLUMNS, which was right when four plates shared one 950px-wide sheet;
+   split across a 570px page it gave each case a 230px thumbnail and the
+   spread read as a toolbar.
+
+   The pair is END-ALIGNED on both pages, and that is the trick that makes the
+   spread symmetric: the left page carries the "Case Studies" heading and the
+   right page carries nothing, so centring would leave the two pairs sitting at
+   different heights. Flush to the bottom of an identical content box, with
+   identically sized plates, their tops line up exactly across the gutter. The
+   heading's slack falls above the left pair, where it belongs. This also
+   survives the heading becoming a drawn asset of a different height. */
+.content--cases {
+  /* height:100% is what makes align-content:end mean anything -- without it
+     .content is auto-height, the grid's flex:1 resolves to its own content
+     and the two pairs sit 65px apart, the exact height of the heading. */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
 .contents-grid {
   list-style: none;
   margin: clamp(1rem, 2.5vh, 1.5rem) 0 0;
@@ -536,27 +559,70 @@ h1.display {
   gap: clamp(.8rem, 2vh, 1.3rem) clamp(1rem, 3vw, 2rem);
   max-width: 600px;
 }
+.contents-grid--half {
+  flex: 1 1 auto;
+  min-height: 0;
+  grid-template-columns: 1fr;
+  align-content: end;
+  gap: 1.7rem;
+  max-width: none;
+  margin: 1.4rem 0 0;
+}
+
 .plate {
   padding: 8px 8px 10px;
   border-radius: 2px;
 }
-/* washi tape across the top-left corner */
+.contents-grid--half .plate { padding: 10px 10px 12px; }
+
+/* washi tape, centred on the top edge.
+   Centred and nearly straight, as drawn -- the old strip was 54px at the
+   top-LEFT corner, which is the right gesture for a small card and reads as a
+   sticker tab on a half-page panel. --tape carries the hue alone so the alpha
+   stays in one place; --tape-tilt is varied per plate below so the four do not
+   look stamped. */
 .plate::before {
   content: "";
+  --tape: 156 202 198;              /* --teal */
   position: absolute;
   top: -7px; left: 14%;
   width: 54px; height: 17px;
-  background: rgba(143, 184, 224, .5);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35);
+  background: rgb(var(--tape) / .5);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / .35);
   transform: rotate(-4deg);
   pointer-events: none;
 }
+.contents-grid--half .plate::before {
+  top: -10px; left: 50%;
+  width: 96px; height: 25px;
+  background: rgb(var(--tape) / .6);
+  transform: translateX(-50%) rotate(var(--tape-tilt, -2deg));
+}
+.contents-grid--half li:nth-child(2) .plate { --tape-tilt: 2.5deg; }
+
+/* The panel. Flat colour, not a gradient: at 230px tall a gradient reads as a
+   UI card, and the references are gouache. The inset hairline is the darker
+   edge where paint pools against the cut -- it works for any hue, which a
+   second hand-picked --c2 per plate did not.
+
+   --img is the slot: drop a background-image on one plate and it covers the
+   colour, so the artwork lands as a file change. */
 .plate__shot {
   display: block;
   height: clamp(62px, 11vh, 86px);
   border-radius: 1px;
-  background: linear-gradient(152deg, var(--c), var(--c2));
+  background-color: var(--c);
+  background-image: var(--img, none);
+  background-size: cover;
+  background-position: center;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / .07);
 }
+/* Fixed px, per the page rule at the top of this file -- the pair has to come
+   out the same height on both pages, and the two pages are not the same shape
+   once the heading is on one of them. 226 + the title block + padding leaves
+   ~20px of slack under the heading at 570x770. */
+.contents-grid--half .plate__shot { height: 226px; }
+
 .plate__title {
   display: block;
   margin-top: .5rem;
@@ -570,6 +636,18 @@ h1.display {
   font-size: 1rem;
   line-height: 1.2;
   color: var(--ink-soft);
+}
+
+/* The peel is tuned for a small card. 13deg across a 475x290 panel throws the
+   far corner most of the way off the page, so the big plates get a shallower
+   one -- same gesture, same material, proportionate. */
+@media (hover: hover) and (pointer: fine) {
+  .contents-grid--half .plate:hover {
+    transform: rotate3d(1, -1, 0, 7deg) translateZ(10px);
+  }
+}
+.contents-grid--half .plate.is-source {
+  transform: rotate3d(1, -1, 0, 11deg) translateZ(13px);
 }
 
 /* ---------- experience ----------
