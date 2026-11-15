@@ -122,9 +122,46 @@ Three things to know before deciding:
    filter — each of those forces `transform-style` back to flat and collapses
    the 3D book. Stacked background layers are fine, so
    `ornament, leather, sheen` composite in one declaration.
-3. **Leather commits the cover to being dark.** Hand-drawn ink and colour over
-   a dark pebbled ground is a different look from ink on cream. Worth holding
-   the reference next to your cover sketch before committing.
+3. **Leather commits the cover to being dark** — see the next section, which
+   is the real consequence and the thing to decide first.
+
+### Where the cover drawings go, if it is leather
+
+Confirmed 2026-11-14: the cover carries hand-drawn scribbles and sketches
+either way. That is not in question. *How they sit on dark leather* is.
+
+Everything drawn for this site so far is dark ink and colour on cream. On an
+oxblood ground that disappears. Three options:
+
+| | What it means | Cost |
+|---|---|---|
+| Light media on leather | Gold / cream / white line work straight onto the hide. Reads as gilt. | A new technique, and gold is unforgiving drawn flat. |
+| Blind deboss | Drawings pressed *into* the leather, same colour, read by shadow only. | A lighting effect rather than a drawing; has to be baked in. |
+| **A paper plate tipped on** | Your drawings on a cream panel with the white die-cut border, glued or taped onto the leather. | **None — this is already your language.** |
+
+**The plate is the recommendation.** It is not a compromise, it is the move in
+every one of the nine reference photos: cut paper with a white border and a
+small hard shadow, sitting on a ground, often held with washi tape. The leather
+becomes the ground. The drawing stays on cream where the ink works, the tape
+and the die-cut border stay, and the book is still leather-bound.
+
+It composes, too — a tipped-on plate for the cover art *plus* a little light
+lettering directly on the hide for the name is what real bound books do.
+
+On the plate route the cover assets become:
+
+| Asset | Size | Opaque? | Notes |
+|---|---|---|---|
+| `leather.png` | 800 × 800 | opaque | One seamless tile. Not drawn by you. |
+| `cover-plate.png` | 1200 × 1500 | opaque | The cover drawing, on cream, drawn exactly how you already draw. Include the white die-cut border. **Not** the 37:50 page ratio — this is a panel sitting on the cover, so its proportions are yours to choose. |
+| `cover-marks.png` | 1600 × 2160 | transparent | *Optional.* Light-media marks that sit directly on the hide around the plate. 37:50. |
+| `cover-back.png` | 1600 × 2160 | transparent | Ornament only, over the leather. |
+
+**One exception to the no-baked-shadows rule.** The plate gets a small hard
+drop shadow, and unlike tape and stars it may be drawn in. Tape and stars are
+rotated to random angles by code, so a baked shadow puts the light source
+somewhere different on every piece. A cover plate is fixed on a fixed cover —
+the light never moves relative to it.
 
 **Timing: this is phase 2, with the rest of Batch 3 — not now.** The greybox is
 grey deliberately. Dropping one real material into it makes everything beside
