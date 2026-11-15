@@ -64,6 +64,21 @@
 
     this._bind();
     this.layout(false);
+
+    /* Everything _calibrate measures hangs off the stage's height, and the
+       stage's height hangs off the bar above it -- which is set in Rock Salt
+       and changes height the moment the webfont lands. Calibrating at boot
+       therefore measures a layout that is about to change. The ResizeObserver
+       catches a later window resize but not this, so it is caught explicitly.
+       Harmless if the font was already cached: the numbers just come out the
+       same. */
+    var self = this;
+    if (global.document.fonts && global.document.fonts.ready) {
+      global.document.fonts.ready.then(function () {
+        self._calibrate();
+        self._placeShadow(self._posedShut);
+      });
+    }
   }
 
   /* How big the OPEN book gets. Measured against the stage rather than fixed,
@@ -81,7 +96,12 @@
     if (!pw || !ph) return 1;
     var tabs = this.stage.querySelector('.tabs');
     var gut  = tabs ? tabs.offsetWidth + 28 : 24;
-    var k    = Math.min((r.width - gut * 2) / (pw * 2), (r.height * 0.94) / ph);
+    /* 0.96, not 0.94. The margin used to be absorbing the vertical drift
+       described in _calibrate as well as doing its own job; now that the
+       drift is corrected the margin only has to cover the perspective's
+       effect on HEIGHT, which is small -- measured growth is 0.996 of the
+       flat height at a 10deg tilt. */
+    var k    = Math.min((r.width - gut * 2) / (pw * 2), (r.height * 0.96) / ph);
     k = Math.max(MIN_FIT, Math.min(k, MAX_FIT));
     return Math.round(k * 1000) / 1000;
   };
@@ -102,34 +122,67 @@
     var wasBooting = this.stage.classList.contains('is-booting');
     var wasOpen    = this.root.classList.contains('is-open');
     var prevScale  = this.stage.style.getPropertyValue('--scale');
+    var prevVoff   = this.pos.style.getPropertyValue('--voff');
     this.stage.classList.add('is-booting');
 
     var fit = this.fitScale();
     var self = this;
+
     function probe(openPose) {
       var sc = openPose ? fit : Math.round(fit * SHUT_K * 1000) / 1000;
       self.stage.style.setProperty('--scale', sc);
       self.root.classList.toggle('is-open', openPose);
-      var b = self.root.getBoundingClientRect();
-      var r = self.stage.getBoundingClientRect();
+
+      /* Recentring is ITERATED to convergence rather than solved, because the
+         gain is not quite 1. A Y translation moves every point of the book by
+         the same layout amount, but each point's PROJECTED movement is scaled
+         by d/(d-z), and z varies across a tilted book -- the near edge moves
+         further than the far one. The bounding box's centre therefore moves by
+         a weighted average that is close to --scale but not equal to it.
+
+         Close enough that it converges in two or three passes; fixed enough
+         that a single divide overshot by 25px when this was first written. The
+         loop stops on the measurement, not on a pass count. */
+      var voff = 0, b, r, drift, i;
+      for (i = 0; i < 5; i++) {
+        self.pos.style.setProperty('--voff', voff.toFixed(2) + 'px');
+        b = self.root.getBoundingClientRect();
+        r = self.stage.getBoundingClientRect();
+        drift = (b.top + b.height / 2) - (r.top + r.height / 2);
+        if (Math.abs(drift) < 0.5) break;
+        voff -= drift / sc;
+      }
+
+      /* The shadow is measured AFTER the recentre, or it would be placed
+         under where the book used to be. */
+      b = self.root.getBoundingClientRect();
+      r = self.stage.getBoundingClientRect();
       /* How far the bottom edge falls below the stage centre, de-scaled. The
          8px tuck is taken off in the same unscaled space so it grows and
          shrinks with the book instead of staying a fixed screen gap. */
-      return (b.bottom - (r.top + r.height / 2)) / sc - 8;
+      return { voff: voff, shy: (b.bottom - (r.top + r.height / 2)) / sc - 8 };
     }
-    this._shyOpen = probe(true);
-    this._shyShut = probe(false);
+
+    var open = probe(true), shut = probe(false);
+    this._voffOpen = open.voff; this._shyOpen = open.shy;
+    this._voffShut = shut.voff; this._shyShut = shut.shy;
 
     /* Put everything back exactly as it was before anything can paint. */
     this.root.classList.toggle('is-open', wasOpen);
     if (prevScale) this.stage.style.setProperty('--scale', prevScale);
     else this.stage.style.removeProperty('--scale');
+    if (prevVoff) this.pos.style.setProperty('--voff', prevVoff);
+    else this.pos.style.removeProperty('--voff');
     if (!wasBooting) this.stage.classList.remove('is-booting');
   };
 
+  /* Both measured offsets are applied together, because they come from the
+     same projection and must never disagree about where the book is. */
   BookEngine.prototype._placeShadow = function (shut) {
-    if (!this.shadow) return;
     if (this._shyShut === undefined) this._calibrate();
+    this.pos.style.setProperty('--voff',
+      Math.round(shut ? this._voffShut : this._voffOpen) + 'px');
+    if (!this.shadow) return;
     var y = shut ? this._shyShut : this._shyOpen;
     this.shadow.style.setProperty('--shsc', shut ? 0.55 : 1);
     this.shadow.style.setProperty('--shy', Math.round(y) + 'px');

@@ -103,7 +103,12 @@ body {
 /* ---------- chrome ---------- */
 .bar {
   display: flex; align-items: baseline; gap: 1rem;
-  padding: clamp(.9rem, 2vw, 1.4rem) clamp(1.1rem, 3vw, 2rem);
+  /* The vertical padding tracks the viewport HEIGHT, not its width. The bar
+     and the hint together were taking 115px of a 760px-tall window -- 15% of
+     the screen, charged to the book, on exactly the screens that can least
+     afford it. A wide-but-short window is the common laptop case and 2vw was
+     giving it the widest padding of all. */
+  padding: clamp(.55rem, 1.6vh, 1.4rem) clamp(1.1rem, 3vw, 2rem);
   position: relative; z-index: 60;
 }
 /* The only way back to the cover, which has no tab of its own. Without it the
@@ -168,10 +173,21 @@ body {
      comes to you. --scale is computed against the stage in main.js rather than
      hard-coded, so a big monitor gets a big book. It is a transform, not a
      width change, so it composites, and the spread's layout -- and so its
-     measured overflow -- is identical in both states. */
+     measured overflow -- is identical in both states.
+
+     --voff recentres the book VERTICALLY and is measured, not chosen. The
+     stage centres the book's LAYOUT box, but what you see is a perspective
+     projection about an origin at 42% of the stage height, and the book's
+     centre sits below that. rotateX swings the bottom half toward the camera
+     and the top half away, so the bottom projects further down than the top
+     comes up and the rendered book lands low -- 69px low at 1400x760, enough
+     to hang off the bottom of the screen. Like --shy it is in UNSCALED px,
+     because it is applied inside the scale, and it transitions with the pose
+     because it is part of this same transform. */
   transform:
     scale(var(--scale, 1))
-    translateX(calc(var(--shift, -1) * var(--pw) / 2));
+    translateX(calc(var(--shift, -1) * var(--pw) / 2))
+    translateY(var(--voff, 0px));
   /* Deliberately the same duration as the page turn: these two run together
      for their whole length. That is the gesture. */
   transition: transform var(--approach) cubic-bezier(.25,.62,.35,1) var(--posedelay);
@@ -370,7 +386,7 @@ body {
 /* ---------- hint ---------- */
 .hint {
   text-align: center; color: var(--ink); opacity: .72; font-size: .82rem;
-  margin: 0 0 clamp(.6rem, 2vh, 1.2rem);
+  margin: 0 0 clamp(.4rem, 1.2vh, 1.2rem);
 }
 kbd {
   font: inherit; border: 1px solid rgba(46,38,33,.35); border-bottom-width: 2px;
@@ -471,7 +487,7 @@ h1.display {
    claim -- these pages go public and the case studies stay abstracted. */
 .ph { color: var(--ink-soft); font-style: italic; opacity: .85; }
 .ph--block {
-  margin-top: clamp(1.2rem, 3vh, 2rem);
+  margin-top: 1.7rem;
   padding: 1rem 1.1rem;
   border: 1px dashed rgba(201, 142, 142, .7);
   border-radius: 8px;
@@ -552,11 +568,11 @@ h1.display {
 
 .contents-grid {
   list-style: none;
-  margin: clamp(1rem, 2.5vh, 1.5rem) 0 0;
+  margin: 1.4rem 0 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(.8rem, 2vh, 1.3rem) clamp(1rem, 3vw, 2rem);
+  gap: 1.125rem 2rem;
   max-width: 600px;
 }
 .contents-grid--half {
@@ -609,7 +625,7 @@ h1.display {
    colour, so the artwork lands as a file change. */
 .plate__shot {
   display: block;
-  height: clamp(62px, 11vh, 86px);
+  height: 86px;
   border-radius: 1px;
   background-color: var(--c);
   background-image: var(--img, none);
@@ -657,11 +673,11 @@ h1.display {
    so the tape binds each entry instead -- same material, any column count. */
 .timeline {
   list-style: none;
-  margin: clamp(.6rem, 2.2vh, 1.5rem) 0 0;
+  margin: 1.24rem 0 0;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: clamp(.45rem, 1.4vh, 1rem) clamp(1.2rem, 3.2vw, 2.6rem);
+  gap: .79rem 2.6rem;
   max-width: 780px;
 }
 .tl-item { position: relative; padding-left: 1.75rem; }
@@ -687,13 +703,13 @@ h1.display {
 /* Fluid with width, not just height. The two columns narrow to ~290px on an
    iPad in portrait, where a fixed .84rem wrapped every note an extra line and
    put Experience 24px over the sheet. */
-.tl-note { margin: .1rem 0 0; font-size: clamp(.76rem, 1.05vw, .84rem); line-height: 1.42; color: var(--ink-soft); }
+.tl-note { margin: .1rem 0 0; font-size: .84rem; line-height: 1.42; color: var(--ink-soft); }
 
 /* The skim layer. Plain on purpose: this is the part a recruiter scans, and
    craft here would get in the way of reading it fast. */
 .toolbox {
-  margin-top: clamp(.6rem, 1.7vh, 1.3rem);
-  padding-top: clamp(.55rem, 1.5vh, 1rem);
+  margin-top: .96rem;
+  padding-top: .84rem;
   border-top: 1px dashed rgba(201, 142, 142, .6);
   max-width: 54ch;
 }
