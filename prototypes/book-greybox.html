@@ -298,12 +298,27 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
         <div class="sheen"></div>
       </div>
       <div class="face face--verso">
+        <h2>About Me</h2><p class="sub">left page — inside front cover</p>
+        <div class="fill">portrait drawing</div>
+      </div>
+    </div>
+
+    <!-- About outgrew the cover: a self-portrait, notes and marginalia need a
+         spread, and the cover keeps only a title, a role line and a short
+         note. So the cover is no longer a section -- it is the landing state,
+         and the five tabs point at five spreads behind it. -->
+    <div class="leaf" data-leaf="1">
+      <div class="face face--recto">
+        <h2>About Me</h2><p class="sub">right page</p>
+        <div class="fill">notes + marginalia</div>
+      </div>
+      <div class="face face--verso">
         <h2>Case Studies</h2><p class="sub">left page</p>
         <div class="fill">2 taped cards</div>
       </div>
     </div>
 
-    <div class="leaf" data-leaf="1">
+    <div class="leaf" data-leaf="2">
       <div class="face face--recto">
         <h2>Case Studies</h2><p class="sub">right page</p>
         <div class="fill">2 taped cards</div>
@@ -314,7 +329,7 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
       </div>
     </div>
 
-    <div class="leaf" data-leaf="2">
+    <div class="leaf" data-leaf="3">
       <div class="face face--recto">
         <h2>Skills</h2><p class="sub">right page</p>
         <div class="fill">skill groups</div>
@@ -325,7 +340,7 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
       </div>
     </div>
 
-    <div class="leaf leaf--cover" data-leaf="3">
+    <div class="leaf leaf--cover" data-leaf="4">
       <div class="face face--recto">
         <h2>Art</h2><p class="sub">right page — inside back cover</p>
         <div class="fill">grid</div>
@@ -354,8 +369,10 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
   var stage  = document.querySelector('.stage');
   var leaves = [].slice.call(book.querySelectorAll('.leaf'));
   var N      = leaves.length;                       // 4 leaves
-  var ROUTES = ['about', 'case-studies', 'experience', 'art', 'contact'];
-  var LABELS = ['About', 'Case Studies', 'Experience', 'Art', 'Contact'];
+  /* Index 0 is the shut book -- the landing, not a section, so it has no
+     route of its own and no tab. The five tabs are indices 1..5. */
+  var ROUTES = ['', 'about', 'case-studies', 'experience', 'art', 'contact'];
+  var LABELS = ['Cover', 'About', 'Case Studies', 'Experience', 'Art', 'Contact'];
   var LIFT   = 2;    // px between leaves in a pile
   var ARC    = 26;   // how far the turning leaf rises out of the stack
   /* APPROACH and TURN are the same length on purpose -- they run together for
@@ -511,8 +528,8 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
     posedShut = shut;
 
     where.textContent = LABELS[index] + '  ·  ' + (index + 1) + ' / ' + (N + 1);
-    [].forEach.call(document.querySelectorAll('.tabs button'), function (b, k) {
-      b.setAttribute('aria-current', String(k === index));
+    [].forEach.call(document.querySelectorAll('.tabs button'), function (b) {
+      b.setAttribute('aria-current', String(Number(b.dataset.i) === index));
     });
   }
 
@@ -523,15 +540,19 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
     book.classList.remove('is-fresh');
     layout(true);
     if (push !== false && history.pushState) {
-      history.pushState({ i: index }, '', '#' + ROUTES[index]);
+      history.pushState({ i: index }, '',
+                        ROUTES[index] ? '#' + ROUTES[index]
+                                      : location.pathname + location.search);
     }
   }
 
   /* tabs */
   ROUTES.forEach(function (r, k) {
+    if (!r) return;                       // no tab for the cover
     var b = document.createElement('button');
     b.type = 'button';
     b.textContent = LABELS[k];
+    b.dataset.i = k;
     b.addEventListener('click', function () { goTo(k); });
     document.getElementById('tabs').appendChild(b);
   });
@@ -568,7 +589,10 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
 
   window.addEventListener('popstate', function (e) {
     var i = (e.state && typeof e.state.i === 'number')
-          ? e.state.i : ROUTES.indexOf((location.hash || '').slice(1));
+          ? e.state.i : (function () {
+              var x = (location.hash || '').slice(1);
+              return x ? ROUTES.indexOf(x) : 0;
+            }());
     if (i < 0) i = 0;
     index = i; layout(true);
   });
@@ -576,14 +600,16 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
   /* Belt and braces, same as the spiral engine: a hash typed into the bar, or
      a plain fragment link, does not reliably reach the popstate handler. */
   window.addEventListener('hashchange', function () {
-    var i = ROUTES.indexOf((location.hash || '').slice(1));
+    var hh = (location.hash || '').slice(1);
+    var i = hh ? ROUTES.indexOf(hh) : 0;
     if (i < 0 || i === index) return;
     index = i;
     book.classList.remove('is-fresh');
     layout(true);
   });
 
-  var start = ROUTES.indexOf((location.hash || '').slice(1));
+  var h = (location.hash || '').slice(1);
+  var start = h ? ROUTES.indexOf(h) : -1;
   if (start > 0) { index = start; book.classList.remove('is-fresh'); }
   layout(false);
 

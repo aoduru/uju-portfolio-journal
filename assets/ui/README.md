@@ -176,12 +176,76 @@ sizes means drawing them twice.
 
 ---
 
-## Open question — how many tabs?
+## Settled — five tabs, and About has its own spread
 
-The plan said tabs are one per spread (3: Case Studies, Experience, Art), with
-About and Contact reached from the wordmark bar. The greybox gives all **five**
-sections a tab, and it navigates noticeably better — every section is one click
-from anywhere, which is what "easy to navigate" actually means.
+Decided 2026-11-14.
 
-Five tabs means five `tab-*.png` files instead of three. Worth deciding before
-Batch 2 is drawn.
+**Five tabs**, not three: About · Case Studies · Experience · Art · Contact.
+Every section one click from anywhere, which is what "easy to navigate" means
+in practice. So five `tab-*.png`.
+
+**About outgrew the cover.** There is not room on a cover for a real About Me
+once it also carries a title and a role line — and About wants a self-portrait,
+notes and marginalia, in the manner of the reference photos. So About is a
+spread of its own and the cover becomes the *landing state* rather than a
+section: it has no tab and no route, and opening the book goes to About.
+
+That makes the book **five leaves, six states**:
+
+| State | Route | Pages |
+|---|---|---|
+| shut, front up | *(none)* | the cover — title, role band, a short note |
+| spread 1 | `#about` | cover verso ∥ leaf 1 recto — portrait ∥ notes |
+| spread 2 | `#case-studies` | 4 taped cards |
+| spread 3 | `#experience` | timeline ∥ Skills |
+| spread 4 | `#art` | the grid |
+| shut, back up | `#contact` | the back cover |
+
+Built and verified in `prototypes/book-greybox.html`. Supersedes the five-state
+table in the plan.
+
+**The role line goes in a clear band on the cover**, as live text — so the
+UX-Engineer-vs-software-engineering question can be settled later without
+repainting a cover. Leave that band genuinely clear.
+
+### New drawn asset
+
+| Asset | Size | Opaque? | Notes |
+|---|---|---|---|
+| `portrait.png` | 1200 × 1500 | transparent | You, for the About spread. A picture rather than a container, so it does not need layout to exist — drawable whenever. The notes and marginalia around it wait for real sizes. |
+
+---
+
+## Open — paper texture on the pages
+
+Raised 2026-11-14. Same solution as the cover leather: a seamless grayscale
+bump map, applied in Procreate, baked into `page-NN.png` before export. The
+generator in `prototypes/leather/` makes paper as readily as hide — different
+parameters, same machinery.
+
+**The constraint that matters: text sits on these.** The brief already says
+keep page stock very low contrast, and that binds harder than it does on the
+cover. A page texture that looks great empty can make a paragraph unreadable.
+Draft it against real copy, not against a blank page.
+
+---
+
+## Open — page-turn sounds
+
+Raised 2026-11-14; files exist from the other portfolio site.
+
+**Where did they come from?** Same question as the leather texture, and it
+matters for the same reason: a sound effect lifted from a template or a stock
+library carries a licence, and this is a public site. If they were bought, or
+came from a CC0 source like freesound's public-domain pool, fine. If they came
+with a template, check what that template's licence actually permits.
+
+**Default them OFF.** The risk is specific and real: a recruiter opens the site
+in an open-plan office and the page makes a noise. That is a worse first
+impression than no sound is a missed one. An obvious, inviting toggle near the
+book gets the delight without the ambush.
+
+Two notes for when it is built: the turn is a user gesture, so autoplay policy
+is not a problem; and it needs **three or four samples chosen at random**, or
+repeated turns sound like a loop rather than paper — the same reason the tape
+is rotated to a different angle every time.
