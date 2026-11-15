@@ -89,85 +89,65 @@ a lot smaller to draw — see the open question below.
 
 ---
 
-## Open question — is the book leather-bound?
+## Settled — the cover is textured, and you bake the texture in
 
-Raised 2026-11-14 with a reference: deep oxblood, fine pebbled grain, matte.
+Decided 2026-11-14 from the cover sketch. Two earlier assumptions in this file
+were wrong and are corrected here.
 
-**If yes, don't draw the leather.** It is the one thing on the whole list that
-is better not hand-drawn. Pebbled grain is uniform high-frequency noise — the
-thing a hand adds least character to and spends the most time on, and any
-unevenness reads as a mistake rather than as craft. It is a *material*, not a
-mark. Everything else on this list is a mark.
+**The ground is terracotta, not oxblood.** The leather reference that started
+this was deep burgundy; the actual cover is warm vermilion `#C4472B`, and the
+marks on it are sage, tan, teal and mauve — all *lighter* than the ground. So
+the "dark ink disappears on a dark cover" problem does not arise, and the
+cream paper plate that was recommended to dodge it is not needed. The white
+patch behind the title already does that job, as paint rather than paper.
 
-So leather would be a tiling texture (one `leather.png`, ~800 × 800, seamless),
-and **what you draw sits on top of it**:
+**Bake the grain into the artwork in Procreate — do not ship a separate
+leather tile.** This is a hard technical constraint, not a preference.
+Grain that reads *through* drawn marks means a `multiply` or `overlay` layer
+on top, and `mix-blend-mode` is one of the properties that forces
+`transform-style` back to flat and collapses the 3D book. Stacked background
+layers can only put the leather *under* the marks, where grain shows around
+them but never through them — which is backwards, since the strokes in the
+sketch have tooth in them.
 
-| | Covers stay painted | Covers go leather |
+In Procreate it is a texture layer and a blend mode: one step, visible as you
+work, and you control how much. The only thing given up is recolouring the
+cover from code, which is moot now the scheme is settled.
+
+**Use the same texture source on every bound surface** — front, back, spine
+and fore-edge — or the book looks assembled from different materials.
+
+So the Batch 3 covers stay exactly as first written: **opaque, full bleed, the
+whole design.** No `leather.png`, no transparent overlay, no `cover-plate.png`.
+
+### Palette, confirmed against the sketch
+
+| | | |
 |---|---|---|
-| `cover-front.png` | opaque, full bleed, the entire design | **transparent** — ornament and lettering only |
-| `cover-back.png` | opaque, full bleed | **transparent** — ornament only |
-| `spine.png` | opaque | **transparent**, or dropped entirely |
-| new | — | `leather.png`, one seamless tile, not drawn by you |
+| ground | `#8DA6B3` | the surface the book sits on |
+| cover | `#C4472B` | |
+| page | `#FBF7F0` | |
+| sage | `#8FB98C` | |
+| tan | `#B99E7C` | |
+| teal | `#9CCAC6` | |
+| mauve | `#B07BA6` | |
 
-The leather version is **much less painting** and the grain stays identical
-across front, back and spine for free. It also means the cover colour becomes a
-variable — the leather can be recoloured without repainting anything.
+### One thing the sketch does not answer
 
-Three things to know before deciding:
+The cover reads **"UJU'S JOURNAL"**, which is the title, not your name and
+role. The plan asks the cover to do real work — someone should know whose site
+this is and what you do before they click anything, since it is the only thing
+on screen until they open it. "UJU'S JOURNAL" gives a first name.
 
-1. **Sourcing.** The reference is someone else's photograph, so it can't go on
-   a public site as-is. Either a CC0 texture (Poly Haven, ambientCG) or a
-   generated seamless tile. Not a blocker, but it is a real step.
-2. **It must be a `background-image` layer.** Not `mix-blend-mode`, not an SVG
-   filter — each of those forces `transform-style` back to flat and collapses
-   the 3D book. Stacked background layers are fine, so
-   `ornament, leather, sheen` composite in one declaration.
-3. **Leather commits the cover to being dark** — see the next section, which
-   is the real consequence and the thing to decide first.
+Two ways out, both fine, but one needs deciding before the cover is painted:
+leave a clear horizontal band for a live-text role line (as the Batch 3 row
+says), or let the top bar carry name and role and keep the cover purely as an
+object. The second is more honest to the sketch; it just means the bar has to
+be more present than a quiet wordmark.
 
-### Where the cover drawings go, if it is leather
-
-Confirmed 2026-11-14: the cover carries hand-drawn scribbles and sketches
-either way. That is not in question. *How they sit on dark leather* is.
-
-Everything drawn for this site so far is dark ink and colour on cream. On an
-oxblood ground that disappears. Three options:
-
-| | What it means | Cost |
-|---|---|---|
-| Light media on leather | Gold / cream / white line work straight onto the hide. Reads as gilt. | A new technique, and gold is unforgiving drawn flat. |
-| Blind deboss | Drawings pressed *into* the leather, same colour, read by shadow only. | A lighting effect rather than a drawing; has to be baked in. |
-| **A paper plate tipped on** | Your drawings on a cream panel with the white die-cut border, glued or taped onto the leather. | **None — this is already your language.** |
-
-**The plate is the recommendation.** It is not a compromise, it is the move in
-every one of the nine reference photos: cut paper with a white border and a
-small hard shadow, sitting on a ground, often held with washi tape. The leather
-becomes the ground. The drawing stays on cream where the ink works, the tape
-and the die-cut border stay, and the book is still leather-bound.
-
-It composes, too — a tipped-on plate for the cover art *plus* a little light
-lettering directly on the hide for the name is what real bound books do.
-
-On the plate route the cover assets become:
-
-| Asset | Size | Opaque? | Notes |
-|---|---|---|---|
-| `leather.png` | 800 × 800 | opaque | One seamless tile. Not drawn by you. |
-| `cover-plate.png` | 1200 × 1500 | opaque | The cover drawing, on cream, drawn exactly how you already draw. Include the white die-cut border. **Not** the 37:50 page ratio — this is a panel sitting on the cover, so its proportions are yours to choose. |
-| `cover-marks.png` | 1600 × 2160 | transparent | *Optional.* Light-media marks that sit directly on the hide around the plate. 37:50. |
-| `cover-back.png` | 1600 × 2160 | transparent | Ornament only, over the leather. |
-
-**One exception to the no-baked-shadows rule.** The plate gets a small hard
-drop shadow, and unlike tape and stars it may be drawn in. Tape and stars are
-rotated to random angles by code, so a baked shadow puts the light source
-somewhere different on every piece. A cover plate is fixed on a fixed cover —
-the light never moves relative to it.
-
-**Timing: this is phase 2, with the rest of Batch 3 — not now.** The greybox is
-grey deliberately. Dropping one real material into it makes everything beside
-it look broken, which wrecks the only thing it is for, which is judging motion.
-And the texture has to be tuned against the final palette, which does not exist
-yet.
+Note the cover title and `wordmark.png` are different assets. The title is
+painted into `cover-front.png`; the wordmark is the bar, and currently says
+"Uju Duru".
 
 ---
 
