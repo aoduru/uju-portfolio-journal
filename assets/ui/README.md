@@ -77,11 +77,60 @@ These are the hero pieces. More work each, but all five are certain.
 
 | Asset | Size | Opaque? | Notes |
 |---|---|---|---|
-| `cover-front.png` | 1600 × 2160 | opaque | **The hero.** Your sketch is already the design. Letter "Uju Duru" into it — that lettering is the most characterful part and shouldn't be a webfont. **Leave a clear horizontal band under the title for the role line**, which stays live text so it can change without a redraw (the UX-Engineer-vs-software-engineering question is still open, and you shouldn't have to repaint a cover to settle it). Keep anything important out of the outer ~6%: that's where the rounded corner, the edge and the sheen sit. |
-| `cover-back.png` | 1600 × 2160 | opaque | Carries Contact. **Leave a clear area roughly centred** for the email / LinkedIn / GitHub links, which are live text and must stay selectable and clickable. |
-| `spine.png` | 150 × 2000 | opaque | Seen edge-on when the book is shut. Narrow, so don't put detail in it that won't survive. |
+| `cover-front.png` | 1600 × 2160 | opaque¹ | **The hero.** Your sketch is already the design. Letter "Uju Duru" into it — that lettering is the most characterful part and shouldn't be a webfont. **Leave a clear horizontal band under the title for the role line**, which stays live text so it can change without a redraw (the UX-Engineer-vs-software-engineering question is still open, and you shouldn't have to repaint a cover to settle it). Keep anything important out of the outer ~6%: that's where the rounded corner, the edge and the sheen sit. |
+| `cover-back.png` | 1600 × 2160 | opaque¹ | Carries Contact. **Leave a clear area roughly centred** for the email / LinkedIn / GitHub links, which are live text and must stay selectable and clickable. |
+| `spine.png` | 150 × 2000 | opaque¹ | Seen edge-on when the book is shut. Narrow, so don't put detail in it that won't survive. |
 | `fore-edge.png` | 200 × 2000 | opaque | The stacked page-edges on the open side of the block. This is what sells the thickness — currently faked with CSS stripes and it's the weakest part of the greybox. |
 | `page-NN.png` | 1400 × 1890 | opaque | 2–3 cream paper variants so facing pages don't look identical. **Keep these very low contrast** — text sits directly on them, and a busy paper makes the whole site unreadable. Grain and a faint tone shift, nothing more. |
+
+¹ Opaque **only if the covers stay painted edge to edge.** If the book
+becomes leather-bound, these three become transparent overlays instead and get
+a lot smaller to draw — see the open question below.
+
+---
+
+## Open question — is the book leather-bound?
+
+Raised 2026-11-14 with a reference: deep oxblood, fine pebbled grain, matte.
+
+**If yes, don't draw the leather.** It is the one thing on the whole list that
+is better not hand-drawn. Pebbled grain is uniform high-frequency noise — the
+thing a hand adds least character to and spends the most time on, and any
+unevenness reads as a mistake rather than as craft. It is a *material*, not a
+mark. Everything else on this list is a mark.
+
+So leather would be a tiling texture (one `leather.png`, ~800 × 800, seamless),
+and **what you draw sits on top of it**:
+
+| | Covers stay painted | Covers go leather |
+|---|---|---|
+| `cover-front.png` | opaque, full bleed, the entire design | **transparent** — ornament and lettering only |
+| `cover-back.png` | opaque, full bleed | **transparent** — ornament only |
+| `spine.png` | opaque | **transparent**, or dropped entirely |
+| new | — | `leather.png`, one seamless tile, not drawn by you |
+
+The leather version is **much less painting** and the grain stays identical
+across front, back and spine for free. It also means the cover colour becomes a
+variable — the leather can be recoloured without repainting anything.
+
+Three things to know before deciding:
+
+1. **Sourcing.** The reference is someone else's photograph, so it can't go on
+   a public site as-is. Either a CC0 texture (Poly Haven, ambientCG) or a
+   generated seamless tile. Not a blocker, but it is a real step.
+2. **It must be a `background-image` layer.** Not `mix-blend-mode`, not an SVG
+   filter — each of those forces `transform-style` back to flat and collapses
+   the 3D book. Stacked background layers are fine, so
+   `ornament, leather, sheen` composite in one declaration.
+3. **Leather commits the cover to being dark.** Hand-drawn ink and colour over
+   a dark pebbled ground is a different look from ink on cream. Worth holding
+   the reference next to your cover sketch before committing.
+
+**Timing: this is phase 2, with the rest of Batch 3 — not now.** The greybox is
+grey deliberately. Dropping one real material into it makes everything beside
+it look broken, which wrecks the only thing it is for, which is judging motion.
+And the texture has to be tuned against the final palette, which does not exist
+yet.
 
 ---
 
