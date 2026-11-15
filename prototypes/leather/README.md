@@ -14,8 +14,15 @@ cover and spine, or the book looks made of two materials.
 **It is mean-127 on purpose.** Tonally neutral, so on Overlay it contributes
 bumps and never a colour cast or a shift in value: `#C4472B` stays `#C4472B`.
 
-**It tiles.** Duplicate and butt the copies edge to edge for any size needed,
-at native resolution. There is no reason to scale it up.
+**It tiles.** `leather-grain-2048.png` is this same file tiled 2x2 -- identical
+pixels, nothing recomputed -- for when a single larger file is less fiddly than
+stacking layers. Tile further for any size needed, at native resolution. There
+is no reason to scale it up.
+
+**Do not regenerate at a larger N to get a bigger tile.** It will not match.
+Changing N changes the warp frequency relative to cell size and the lighting
+gradient's falloff per pixel, so the pebbles come out rounder, more regular
+and flatter -- a different texture wearing the same parameters. Tile instead.
 
 ## Why generated rather than downloaded
 
