@@ -1,42 +1,89 @@
 /* ============================================================
    Uju Duru — journal portfolio
-   Top-bound sketchbook. Sheets rotate about their top edge.
+   Side-bound hardcover journal. Leaves rotate about the SPINE.
+
+   Ported from prototypes/book-greybox.html, where the motion was
+   settled. The comments that explain *why* a value is what it is
+   came with it -- they are the record of what was tried and what
+   broke, and they are why this file does not get re-litigated.
    ============================================================ */
 
 :root {
-  --cover:      #DCA4A4;   /* deep mauve cover, from the design */
-  --cover-edge: #C98E8E;
-  --page:       #FDF5F3;   /* inside sheets */
-  --page-2:     #F3E3DE;   /* sheets further down the stack */
-  --desk:       #F3DEDA;   /* surface the book lies on */
-  --ink:        #634343;
-  --ink-soft:   #8A6A66;
-  --dot:        rgba(220, 164, 164, 0.55);
-  /* Band height must be a real length for the dot grid to stay continuous
-     across the bend, so the page height is a token rather than inline. */
-  --page-h:     min(560px, 68vh);
-  --bands:      6;
-  /* --band-h is the measured band height in px, set by main.js. It exists only
-     so the dot grid can be phase-shifted per band and read as one sheet. */
-  --coil:       #8FB8E0;
-  --coil-dk:    #5E8CBC;
-  /* Annotation only. These two never carry structure -- they mark, highlight
-     and tape. Structure stays mauve, ink and page. */
-  --marker:     #D94A63;
-  --high:       #FFE27A;
+  /* ---------- palette ----------
+     Sampled from the three Procreate sketches. Terracotta cover on a slate
+     blue-grey surface; cream pages. The accent five (sage, tan, teal, mauve,
+     star) are ANNOTATION ONLY -- they tape, mark and highlight. Structure
+     stays cover / page / ink, or the pages turn into a swatch board. */
+  --ground:     #8DA6B3;   /* the surface the book lies on */
+  --ground-dk:  #7A95A3;
+  --cover:      #C4472B;   /* terracotta boards */
+  --cover-edge: #9E3722;
+  --page:       #FBF7F0;   /* inside pages */
+  --page-2:     #F0E8DB;   /* pages further down the stack, and the fore-edge */
+  --ink:        #2E2621;
+  --ink-soft:   #6E6259;
 
-  /* Two faces only. --font-hand is the NAME alone — the wordmark and the
+  --sage:       #8FB98C;
+  --tan:        #B99E7C;
+  --teal:       #9CCAC6;
+  --mauve:      #B07BA6;
+  --star:       #F0C640;
+  --marker:     #C9452F;   /* annotation red -- underlines, circles */
+  --high:       #F7DC7A;   /* highlighter */
+
+  /* ---------- type ----------
+     Two faces only. --font-hand is the NAME alone -- the wordmark and the
      cover's h1; everything else is Inter. Rock Salt has tall glyphs and a deep
      j descender, so anywhere it sets two lines needs a line-height near 1.35
      or "Uju" collides with "Duru". It ships at 400 only; never ask for a bold. */
   --font-hand: 'Rock Salt', cursive;
   /* Caveat does the handwritten annotations -- dates, captions, margin notes.
      Rock Salt stays the NAME alone; it is too tall and too loud for running
-     text, and it ships at 400 only. */
+     text. */
   --font-loop: 'Caveat', cursive;
   --font-body: 'Inter', system-ui, sans-serif;
 
-  --flip-ms: 820ms;
+  /* ---------- the page, and why it is in px ----------
+     ONE page. The book is two of these wide, with the spine at its centre.
+
+     Fixed px, not vw/vh, and that is deliberate: the whole book is fitted to
+     the viewport by a SCALE TRANSFORM (--scale, computed in main.js), so these
+     are the size the pages are AUTHORED at, not the size they are displayed
+     at. Everything inside a page is therefore sized in rem and px against this
+     570x770 box and scales with it as one piece.
+
+     The corollary is a hard rule: NOTHING inside a page may be sized in vw or
+     vh. Those do not track the scale, so a vw-clamped heading grows while its
+     page shrinks and overruns it -- which is the old build's bug, where the
+     sheet was viewport-sized and the type had to chase it. */
+  --pw: 570px;
+  --ph: 770px;
+
+  --lift: 2px;                 /* z-separation per leaf in a pile */
+
+  /* ---------- motion ----------
+     Opening is one gesture, not two. The book comes at you WHILE the page
+     turns -- that simultaneity is the whole character of it and must not be
+     taken away. But "coming at you" is really two different movements that
+     were sharing one transform, and only one of them caused trouble:
+
+       --approach  scale + slide. The book getting bigger and nearer. This is
+                   the good part. Runs the full length of the turn.
+       --standup   rotateX, the book tilting from flat-on-the-desk up to a
+                   reading angle. Rotating the book towards the viewer while
+                   the cover is mid-flip makes the cover GROW as it turns, and
+                   a cover that grows reads as a cover coming back. So this one
+                   is short and early, finished before the cover is halfway.
+
+     Splitting them keeps the approach overlapping the turn and gets the
+     looming out of the way. Kept in sync with main.js, which can override all
+     of them from the query string. */
+  --approach: 620ms;
+  --standup: 280ms;
+  --turn: 620ms;
+  --posedelay: 0ms;
+
+  /* Still used by the case-study plates below. */
   --flip-ease: cubic-bezier(.33, 0, .18, 1);
 }
 
@@ -44,324 +91,379 @@
 html, body { height: 100%; }
 body {
   margin: 0;
-  background: var(--desk);
+  background: var(--ground);
   color: var(--ink);
   font-family: var(--font-body);
   display: grid;
   grid-template-rows: auto 1fr auto;
   overflow: hidden;
 }
-.defs { position: absolute; width: 0; height: 0; }
 
-/* ---------- masthead ---------- */
-.masthead {
-  display: flex; justify-content: space-between; align-items: flex-start;
-  padding: clamp(1rem, 2.5vw, 2rem) clamp(1.25rem, 4vw, 3rem) 0;
+/* ---------- chrome ---------- */
+.bar {
+  display: flex; align-items: baseline; gap: 1rem;
+  padding: clamp(.9rem, 2vw, 1.4rem) clamp(1.1rem, 3vw, 2rem);
   position: relative; z-index: 60;
 }
-.wordmark {
-  font-family: var(--font-hand); font-size: clamp(1rem, 1.9vw, 1.5rem);
-  line-height: 1.7; color: var(--ink); text-decoration: none;
+/* The only way back to the cover, which has no tab of its own. Without it the
+   cover is reachable only by Back or the left arrow -- and the cover is the
+   best-looking thing here, so nothing pointing at it is a real gap.
+   Logo-goes-home is also what everyone already expects a wordmark to do. */
+.bar__home {
+  font-family: var(--font-hand); font-size: clamp(.95rem, 1.7vw, 1.3rem);
+  line-height: 1.7; color: var(--ink);
+  background: none; border: 0; padding: 0; cursor: pointer;
 }
-.nav ul { list-style: none; display: flex; gap: clamp(.8rem, 2vw, 2rem); margin: 0; padding: 0; }
-.nav a {
-  font-family: var(--font-body); font-weight: 500;
-  font-size: clamp(.9rem, 1.2vw, 1.05rem); letter-spacing: .005em;
-  color: var(--ink); text-decoration: none; opacity: .72;
-  border-bottom: 2px solid transparent; padding-bottom: 2px;
+.bar__home:hover { text-decoration: underline; }
+.bar__home:focus-visible { outline: 2px solid var(--cover-edge); outline-offset: 3px; border-radius: 2px; }
+/* Where you are, and how much is left. The book's own edges are not visible
+   enough to answer either question, and "easy to navigate" is one of the three
+   things this site is for. */
+.bar__where {
+  margin: 0 0 0 auto; font-size: .85rem; font-weight: 500;
+  color: var(--ink); opacity: .72; font-variant-numeric: tabular-nums;
 }
-.nav a:hover, .nav a[aria-current="page"] { opacity: 1; border-bottom-color: var(--cover-edge); }
 
 /* ============================================================
    3D stage
    ============================================================ */
-.journal-viewport {
+.scene { position: relative; display: grid; min-height: 0; }
+.stage {
   position: relative;
-  width: min(950px, 92vw);
-  height: var(--page-h);
-  margin: auto;
-  /* The free edge swings ~560px toward the camera, so magnification there is
-     P/(P-560). 1250 gave ~2x and the page engulfed the header; 1700 gives a
-     ~1.5x loom — enough to feel the page pass your eye, not enough to shout. */
-  perspective: 1700px;
-  /* The vanishing point must NOT sit on the hinge. With it at 50% 0% every
-     point scaled about the pivot and the turn read as a vertical squash. */
-  perspective-origin: 50% 30%;
-}
-.journal-book {
-  position: absolute; inset: 0;
-  transform-style: preserve-3d;
+  display: grid;
+  place-items: center;
+  /* The book's LAYOUT box is a fixed 770px tall whatever the scale transform
+     does to it on screen, and a grid item defaults to min-height:auto, which
+     refuses to shrink below that. On a 768px-tall window the stage therefore
+     came out 770px tall, overflowed its row and pushed the hint off the bottom
+     of the screen. Allowing it to shrink lets the row be the height actually
+     available; the book simply overflows its own stage box by a layout amount
+     that the transform has already scaled away, so nothing moves on screen.
+     It also makes fitScale() honest -- it measures this box. */
+  min-height: 0;
+  /* Deep. The leaves swing a full half-page toward the camera, and a short
+     perspective turns that into a 2x loom that swallows the chrome. */
+  perspective: 2400px;
+  /* The vanishing point must NOT sit on the hinge, or every point scales about
+     the pivot and the turn reads as a horizontal squash rather than a page
+     passing your eye. */
+  perspective-origin: 50% 42%;
 }
 
-/* ---------- a sheet ----------
-   Two elements do two jobs, deliberately:
-     .sheet          carries the FLIP transform (set by JS)
-     .sheet__flutter carries the HOVER transform
-   The boilerplate put both on one element, so hovering replaced the flip
-   transform outright and the page snapped. Separating them lets the two
-   animations compose instead of fight. */
-.sheet {
-  position: absolute; inset: 0;
-  transform-origin: top center;
+/* The book is always TWO pages wide; the spine sits at its centre. When the
+   book is shut everything is stacked on one side, so the whole thing slides
+   half a page to keep the visible object centred.
+
+   Two nested elements, because the approach and the stand-up need separate
+   timing (see --approach / --standup above). Nesting composes to exactly the
+   same matrix as the single `scale translateX rotateX` this replaced: the
+   parent's transform applies first, then the child's. */
+.book-pos {
+  position: relative;
+  transform-style: preserve-3d;
+  /* scale FIRST, so the half-page shift is scaled with it and the book cannot
+     drift sideways mid-transition. The scale is what makes an open spread
+     readable: shut, the book is small and invitingly far away; opened, it
+     comes to you. --scale is computed against the stage in main.js rather than
+     hard-coded, so a big monitor gets a big book. It is a transform, not a
+     width change, so it composites, and the spread's layout -- and so its
+     measured overflow -- is identical in both states. */
+  transform:
+    scale(var(--scale, 1))
+    translateX(calc(var(--shift, -1) * var(--pw) / 2));
+  /* Deliberately the same duration as the page turn: these two run together
+     for their whole length. That is the gesture. */
+  transition: transform var(--approach) cubic-bezier(.25,.62,.35,1) var(--posedelay);
+}
+.book {
+  position: relative;
+  width: calc(var(--pw) * 2);
+  height: var(--ph);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt, 52deg));
+  /* Short and front-loaded, and over well before the cover reaches 90deg.
+     This is the single component that was making the cover loom mid-turn. */
+  transition: transform var(--standup) cubic-bezier(.2,.8,.3,1) var(--posedelay);
+}
+
+/* Shut, lying on the surface: steep tilt, reads as flat on a desk. Open: comes
+   up to a reading angle. This one transform is most of what sells "it got
+   picked up". */
+.book.is-open { --tilt: 10deg; }
+
+/* ---------- a leaf ----------
+   Hinged on its LEFT edge, which is the spine at the book's centre.
+   rotateY(0) rests it on the right half, rotateY(-180deg) on the left. */
+.leaf {
+  position: absolute;
+  top: 0; left: 50%;
+  width: var(--pw); height: var(--ph);
+  transform-origin: left center;
   transform-style: preserve-3d;
   will-change: transform;
 }
-.sheet__flutter {
-  position: absolute; inset: 0;
-  transform-origin: top center;
-  transform-style: preserve-3d;
-  transition: transform 260ms ease-out;
-}
-
-/* Two real faces, so the back of the page exists. A single div with
-   backface-visibility:hidden simply vanishes at 90deg — fine for a dissolve,
-   wrong for a sketchbook. */
 .face {
   position: absolute; inset: 0;
   backface-visibility: hidden;
-  transform-style: preserve-3d;
-  border-radius: 3px 3px 12px 12px;
-  box-shadow: 0 2px 2px rgba(99,67,67,.08), 0 16px 34px rgba(99,67,67,.16);
+  border-radius: 2px 9px 9px 2px;
+  background-color: var(--page);
+  box-shadow: inset 0 0 0 1px rgba(46, 38, 33, .09);
 }
-/* The two faces sat at exactly Z=0, so which one you saw was decided purely by
-   backface culling -- and mobile WebKit got that wrong, painting the cover's
-   cream back face over its mauve front. A pixel of separation each way leaves
-   nothing to sort. Both get a POSITIVE translateZ: the back face's local +Z
-   points away from the viewer once it is flipped, so this pushes them apart. */
-.face--front { transform: translateZ(1px); }
-.face--back  { transform: rotateX(180deg) translateZ(1px); }
+/* The back of a leaf is the same surface seen from behind, so it is
+   pre-flipped. That flip also swaps its local left and right: a turned leaf's
+   hinge ends up on the verso's local RIGHT, which is why the two gutter
+   gradients below run in opposite directions. */
+.face--verso { transform: rotateY(180deg); border-radius: 9px 2px 2px 9px; }
 
-/* A turning page loses the light. Registering the property is what lets it
-   interpolate instead of snapping between keyframes. */
-@property --shade { syntax: '<number>'; inherits: true; initial-value: 0; }
-.face::before {
-  content: ""; position: absolute; inset: 0; z-index: 3; pointer-events: none;
-  background: rgba(70, 42, 42, var(--shade, 0));
+/* The gutter. Paper does not meet the spine flat -- it dips, and that dip is
+   most of what tells you these two pages belong to ONE book rather than being
+   two cards side by side. Painted onto the hinge edge of each face, so it
+   needs no extra element and cannot fall out of sync with the geometry. */
+.face--recto { background-image: linear-gradient(90deg,  rgba(46,38,33,.20), rgba(46,38,33,0) 11%); }
+.face--verso { background-image: linear-gradient(270deg, rgba(46,38,33,.20), rgba(46,38,33,0) 11%); }
+
+/* Board, not paper: only the two EXTERIOR cover faces. The inside of the front
+   cover is a pasted endpaper and the inside of the back cover is an ordinary
+   page -- both are paper, which is why the About spread must not have one
+   terracotta half.
+
+   The leather grain is BAKED INTO the cover art in Procreate, not composited
+   here: mix-blend-mode is one of the properties that forces transform-style
+   back to flat, and a flattened cover collapses the book. See
+   prototypes/leather/README.md. */
+.face--board {
+  background-color: var(--cover); color: #fff;
+  background-image: none;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.22);
+  border-radius: 3px 11px 11px 3px;
 }
-
-/* ---------- paper, as a chain of hinged bands ----------
-   No single element can bend, so the paper is six bands, each hinged at the
-   bottom of the one above. Compounding their rotations approximates a curve.
-   Only the PAPER is sliced: the content rides over it as one flat layer, so
-   text stays crisp, selectable and free of seams.
-
-   Nothing in this chain may carry filter, mix-blend-mode, opacity<1, clip-path
-   or overflow — every one of those forces transform-style back to flat and
-   collapses the bend. The grain and the clipping live on .face__flat instead. */
-@property --curl { syntax: '<number>'; inherits: true; initial-value: 0; }
-
-.bend { position: absolute; inset: 0; transform-style: preserve-3d; }
-.band {
-  position: absolute; left: 0; right: 0;
-  transform-origin: top center;
-  transform-style: preserve-3d;
-  /* Each band is its own polygon now, and backface-visibility on .face does
-     NOT cull children inside a preserve-3d context — without this the back
-     face's bands render straight through the front of the page. */
-  backface-visibility: hidden;
-  transform: rotateX(calc(var(--curl, 0) * var(--w) * 1deg));
-  color: var(--cover);
-  background-color: currentColor;
-  /* Band heights are fractional (93.33px at 1440x900), so each boundary left a
-     1px gap that the sheet below showed through. A 1px bleed in the band's own
-     colour closes it without changing any band's height, which an overlap
-     would have accumulated down the chain. */
-  box-shadow: 0 2px 0 0 currentColor;
-}
-.band--last { box-shadow: none; }
-.bend > .band  { top: 0; height: calc(100% / var(--bands)); border-radius: 3px 3px 0 0; }
-.band > .band  { top: 100%; height: 100%; }   /* each band is one slice tall */
-.band--last    { border-radius: 0 0 12px 12px; }
-
-/* dot grid, offset per band so it reads as one continuous sheet */
-.bend--inner .band {
-  color: var(--page);
-  background-image: radial-gradient(var(--dot) 1px, transparent 0);
-  background-size: 16px 16px;
-  background-position: 0 calc(-1 * var(--i) * var(--band-h));
-}
-/* No grain layer. #paper-grain emits pure turbulence with no feComposite back
-   to SourceGraphic, so on a band it painted an opaque wash instead of a
-   texture, and its filter region spilled past the page edge now that .face no
-   longer clips. Sixty filtered pseudo-elements was the wrong price for it
-   anyway. The dot grid carries the paper texture; if grain comes back it
-   should be a baked noise image, which composites without a filter. */
-/* A curved surface loses light the further it tips out of the page plane.
-   This interpolates from the tone at the band's top (--d0) to the tone at its
-   bottom (--d), so the six bands meet with no step and read as one shadow. A
-   flat fill per band gave six discrete tonal rectangles once curl rose. */
-.band::after {
-  content: ""; position: absolute; inset: 0;
-  background: linear-gradient(180deg,
-    rgba(70, 42, 42, calc(var(--curl, 0) * var(--d0) * 0.009)),
-    rgba(70, 42, 42, calc(var(--curl, 0) * var(--d)  * 0.009)));
-  pointer-events: none;
-}
-
-/* The shadow the coils throw across the top of the page. It lives on the top
-   BAND, not on .face — as a child of .face it was a rectangle, and once it had
-   to be pushed forward to clear the curling bands it detached from the paper
-   and floated up to ~79px in front of it. On the band it curves with the paper
-   and needs no --curl tracking at all. */
-.bend > .band::before {
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 60%;
-  background: linear-gradient(180deg, rgba(99,67,67,.16), transparent);
-  pointer-events: none;
-}
+.face--board.face--verso { border-radius: 11px 3px 3px 11px; }
 
 /* ---------- the flat layer ----------
-   Clipping and the grain filter both flatten whatever carries them, so they
-   live here, over the bend, where flat is exactly what we want. */
+   Clipping flattens whatever carries it, so it lives here, over the face,
+   where flat is exactly what we want. Pages CLIP; they never scroll -- which
+   is the discipline that governs every layout below. .face has no 3D children
+   of its own, so nothing is lost by this being flat. */
 .face__flat {
   position: absolute; inset: 0;
   overflow: hidden;
-  border-radius: 3px 3px 12px 12px;
+  border-radius: inherit;
   backface-visibility: hidden;
-  /* The content is flat, but the bands it sits on swing forward as they curl
-     (~5.5px per degree of bend at the free edge), so a fixed offset let them
-     sweep in front and swallow the text. Tracking --curl keeps the content
-     ahead of the paper at every point in the bend. The magnification this
-     costs is ~2% at hover, which is why the curl is kept modest. */
-  transform: translateZ(calc(.5px + var(--curl, 0) * 5.5px));
+  /* No background: the face underneath carries the page colour AND the gutter
+     gradient, and a background here would paint over the gutter. */
 }
 
-
-/* ---------- content ---------- */
-.content { position: relative; z-index: 2; padding: clamp(3.5rem, 7vh, 5.5rem) clamp(2rem, 5vw, 4rem); }
-/* Section titles are set, not written — only the name stays handwritten, and
-   it is an h1 on the cover alone. The sans needs a tighter line than the
-   script did, hence the two line-heights. */
-.display { font-family: var(--font-body); font-weight: 600; font-size: clamp(2.1rem, 4.8vw, 3.4rem); line-height: 1.02; letter-spacing: -.015em; margin: 0; }
-h1.display { font-family: var(--font-hand); font-weight: 400; font-size: clamp(1.5rem, 3.4vw, 2.5rem); line-height: 1.7; letter-spacing: 0; }
-.kicker  { font-family: var(--font-body); font-weight: 500; font-size: .95rem; letter-spacing: .03em; color: var(--ink-soft); margin: .6rem 0 0; }
-.lede    { max-width: 46ch; color: var(--ink-soft); line-height: 1.65; }
-.cover-art { position: absolute; right: clamp(1rem,4vw,3rem); bottom: 0; height: 76%; }
-/* the cover carries About Me, so its copy has to clear the illustration */
-.content--cover .lede { max-width: 24ch; margin-top: 1.4rem; }
-
-/* ---------- flutter ----------
-   A loose sheet does not oscillate evenly; it eases at the top of its travel.
-   Three keyframes with uneven timing read as tension rather than a metronome. */
-.flutter-zone {
-  position: absolute; bottom: 0; left: 0; width: 100%; height: 72px;
-  border: 0; background: transparent;
-  /* grab, not pointer: the gesture is lifting a page, not pressing a button.
-     No z-index here -- .sheet is preserve-3d, where z-index is ignored and
-     depth decides both paint order and hit testing. See .face__flat below. */
-  cursor: grab;
+/* ---------- thickness ----------
+   The page block under each half. Without it the open book is two rectangles
+   lying on a colour; with it there is an object on a surface. Sits a hair
+   BELOW the top page (negative Z) and is offset down-screen, which at this
+   tilt reads as depth. */
+.block {
+  position: absolute; top: 0; height: var(--ph); width: var(--pw);
+  transform: translateZ(-1px);
+  border-radius: 2px 9px 9px 2px;
+  background: var(--page-2);
+  box-shadow:
+      0 1px 0 #E2D9C9, 0 2px 0 #F5EFE4, 0 3px 0 #E2D9C9,
+      0 4px 0 #F5EFE4, 0 5px 0 #D8CDBA, 0 7px 12px rgba(26, 20, 16, .32);
 }
-.flutter-zone:active { cursor: grabbing; }
-.flutter-zone:focus-visible {
-  outline: 2px solid var(--cover-edge); outline-offset: -5px;
-  border-radius: 0 0 12px 12px;
-}
+.block--r { left: 50%; }
+.block--l { left: 0; border-radius: 9px 2px 2px 9px; }
+/* A shut book has a block on ONE side only -- whichever side the leaves are
+   stacked on. Hiding by open/closed alone left the right-hand block sitting
+   out on its own next to the shut back cover, like a slab of paper with no
+   book attached to it.
+   The side that gains a block gains it MID-TURN, not at the click: flipped at
+   the click, a full page-sized slab materialises on the empty side before the
+   cover has moved, and that pop is what read as "a white page turning". It is
+   scheduled for the instant the leaf passes 90deg, when the leaf is directly
+   overhead and hides the change -- which is also when it becomes true.
+   visibility, not opacity -- opacity below 1 forces transform-style back to
+   flat, and that is the exact trap the spiral build kept falling into. */
+.book.is-shut-front .block--l { visibility: hidden; }
+.book.is-shut-back  .block--r { visibility: hidden; }
 
-/* The content layer sits at translateZ(.5px). Inside preserve-3d that half
-   pixel beat the lift strip's z-index:5 outright, so every click aimed at the
-   strip landed on the text or the cover art instead -- the strip was the top
-   element at 2 of 441 probed points. The .5px is load-bearing (it keeps the
-   curling bands off the text), so the fix is to stop the layer taking the
-   pointer at all and let real controls opt back in. */
-/* Everything inside the flutter MOVES, so anything in here that takes the
-   pointer makes the hit test depend on the animation the hit test is driving:
-   hover the strip, the paper swings in front of it, hover is lost, the
-   animation stops, the paper drops back, hover returns. Measured at ~3.5 Hz,
-   and it ate the clicks too -- a click needs mousedown and mouseup on the SAME
-   element, and the bottom band held the cursor 76% of the time. The strip is a
-   sibling of this subtree and never moves, so it is the only hittable thing. */
-.sheet__flutter { pointer-events: none; }
-.content :is(a, button, input, select, textarea, [tabindex]) { pointer-events: auto; }
-
-/* Only the strip flutters now. The old rule fired from anywhere on the sheet,
-   which promised the whole page was interactive when it never was.
-   :has() rather than a sibling combinator -- the button follows .sheet__flutter
-   in the DOM, so `~` could never have matched it either way. */
-/* Keyboard focus is not a pointer affordance, so it stays unguarded. */
-.sheet:not(.is-flipped):has(.flutter-zone:focus-visible) .sheet__flutter {
-  animation: flutter 1.6s ease-in-out infinite;
-}
-/* iOS leaves :hover stuck on whatever was last tapped, so tapping the strip to
-   turn the page started this flutter on the sheet revealed underneath and left
-   it looping -- the jitter that outlived the flip by a couple of seconds. */
-@media (hover: hover) and (pointer: fine) {
-  .sheet:not(.is-flipped):has(.flutter-zone:hover) .sheet__flutter {
-    animation: flutter 1.6s ease-in-out infinite;
-  }
-  }
-
-/* Lift cue: a soft shadow along the bottom edge so the strip reads as grabbable
-   before you hover it. No translateZ -- the last element given one here
-   detached from the paper and floated in front of it. */
-.sheet:not(.is-flipped) .face--front::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 72px;
-  background: linear-gradient(180deg, transparent, rgba(99, 67, 67, .13));
-  border-radius: 0 0 12px 12px; pointer-events: none;
-  opacity: .62; transition: opacity 220ms ease-out;
-}
-.sheet:not(.is-flipped):has(.flutter-zone:hover) .face--front::after { opacity: 1; }
-@media (prefers-reduced-motion: reduce) {
-  .sheet:not(.is-flipped):has(.flutter-zone:hover) .sheet__flutter,
-  .sheet:not(.is-flipped):has(.flutter-zone:focus-visible) .sheet__flutter { animation: none; }
-}
-@keyframes flutter {
-  /* Positive rotateX, same as the turn: the free edge has to come TOWARD the
-     viewer. Negative sent it backwards, where perspective foreshortened it and
-     the lift read as the page simply getting shorter. The skewX is gone too —
-     a 2D shear on a page that is genuinely in perspective fights the 3D. */
-  0%   { transform: rotateX(0deg); --curl: 0; }
-  38%  { transform: rotateX(6deg); --curl: 6; }
-  62%  { transform: rotateX(7deg); --curl: 7; }
-  100% { transform: rotateX(0deg); --curl: 0; }
-}
-
-/* ---------- the flip ----------
-   Angles and timing live in bookEngine; the class is only a hover guard. */
-
-/* ---------- spiral ----------
-   Two layers with the stack between them. One layer can only ever look like
-   wire lying on the paper; the sheet has to interrupt the coil twice. */
-.spine {
-  position: absolute; top: -34px; left: 0; right: 0; height: 110px;
+/* ---------- the shut book invites a click ---------- */
+.sheen {
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg,
+      transparent 38%, rgba(255,255,255,.26) 50%, transparent 62%);
+  background-size: 300% 100%;
+  background-position: var(--sheen, 120%) 0;
   pointer-events: none;
 }
-.spine--front { z-index: 50; }
-.spine svg { width: 100%; height: 100%; display: block; }
+.book:not(.is-open) { cursor: pointer; }
+@media (hover: hover) and (pointer: fine) {
+  .book:not(.is-open):hover { --tilt: 47deg; }
+}
+/* Before the first interaction, a slow sweep every few seconds. */
+@keyframes idlesheen {
+  0%, 62% { background-position: 120% 0; }
+  88%     { background-position: -40% 0; }
+  100%    { background-position: -40% 0; }
+}
+.book.is-fresh .sheen { animation: idlesheen 4.2s ease-in-out infinite; }
+
+/* ---------- the ground ---------- */
+.shadow {
+  position: absolute; left: 50%; top: 50%;
+  width: calc(var(--pw) * 2); height: calc(var(--ph) * .34);
+  /* Pulled up under the book's lower edge. Sitting it at the stage centre left
+     a detached smudge well below the object, which reads as hovering rather
+     than resting -- the one thing the shadow exists to prevent.
+     --shy differs by state because the book stands up as it opens: shut and
+     tilted back at 52deg, its footprint is much lower on screen than when it
+     is open at 10deg. It is set from JS in unscaled px and MEASURED per pose,
+     not written here as a constant -- the rendered bottom edge is a
+     perspective projection about an origin at 42% of the stage's height, so it
+     moves whenever the stage's height changes. Two hard-coded percentages were
+     tried first and were 66px out at 1024x768. See _calibrate in bookEngine.
+
+     ORDER MATTERS. The offset is INSIDE the scale, which the greybox's
+     `translate(...) scale(...)` had backwards: a translate applied outside the
+     scale is in unscaled parent space, so the shadow kept a constant pixel
+     offset while the book it belongs to grew and shrank around it. Written
+     this way the whole list composes to: stage centre + --scale x --shy, so
+     the shadow tracks the book at every size. translate(-50%,-50%) still
+     centres it, because scaling about the centre cannot move the centre. */
+  transform:
+    translate(-50%, -50%)
+    scale(var(--scale, 1))
+    translateY(var(--shy, 300px))
+    scaleX(var(--shsc, .55));
+  background: radial-gradient(ellipse at center, rgba(26, 20, 16, .42), transparent 68%);
+  /* A filter here is safe ONLY because .shadow is outside the book's
+     preserve-3d subtree -- it is a sibling of .book-pos, not a descendant. */
+  filter: blur(11px);
+  transition: transform var(--approach) cubic-bezier(.25,.62,.35,1) var(--posedelay);
+  pointer-events: none;
+}
+
+/* ---------- tabs ----------
+   Visible immediately, never discovered: they are what lets someone jump
+   rather than page through, and they are the answer to "easy to navigate". */
+.tabs {
+  position: absolute; top: 50%; right: max(1.5vw, 12px);
+  transform: translateY(-50%);
+  display: grid; gap: 7px;
+  z-index: 40;
+}
+.tabs button {
+  font-family: var(--font-body);
+  font-size: .78rem; font-weight: 600; letter-spacing: .01em;
+  padding: .5rem .75rem;
+  border: 0; border-radius: 3px 8px 8px 3px;
+  background: var(--page-2); color: var(--ink);
+  cursor: pointer; text-align: left;
+  box-shadow: 1px 1px 0 rgba(26,20,16,.2);
+  transition: background 160ms ease-out, box-shadow 160ms ease-out;
+}
+.tabs button:hover { background: var(--page); }
+.tabs button[aria-current="page"] {
+  background: var(--page);
+  box-shadow: 2px 2px 0 rgba(26,20,16,.26);
+}
+.tabs button:focus-visible { outline: 2px solid var(--cover-edge); outline-offset: 2px; }
 
 /* ---------- hint ---------- */
 .hint {
-  text-align: center; color: var(--ink-soft); font-size: .85rem;
-  margin: 0 0 clamp(.75rem, 2vh, 1.5rem);
+  text-align: center; color: var(--ink); opacity: .72; font-size: .82rem;
+  margin: 0 0 clamp(.6rem, 2vh, 1.2rem);
 }
 kbd {
-  font: inherit; border: 1px solid rgba(99,67,67,.3); border-bottom-width: 2px;
+  font: inherit; border: 1px solid rgba(46,38,33,.35); border-bottom-width: 2px;
   border-radius: 4px; padding: 0 .35em;
 }
 
+/* The pose is set from JS, so on a cold load the element's first computed
+   transform uses the shut fallbacks and the real values arrive a tick later --
+   which starts a transition the moment the page appears. Deep-linking to #art
+   should put you AT the Art spread, not play the book opening at you.
+   Suppressed for the first frames, then released. */
+.stage.is-booting .book,
+.stage.is-booting .book-pos,
+.stage.is-booting .shadow { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .book, .book-pos, .shadow { transition: none; }
+  .book.is-fresh .sheen { animation: none; }
+}
 
 /* ============================================================
    Page content
    Everything here lives inside .content, which rides on .face__flat --
-   already flat, already clipped. Nothing in this section may touch the
-   band chain: filter, opacity<1, clip-path and overflow all collapse the
-   bend (invariant 2).
+   already flat, already clipped.
 
-   A sheet is min(560px, 68vh) and .face__flat CLIPS rather than scrolls,
-   so every page below is sized to fit rather than to scroll. That cap is
-   the real constraint on how much any one sheet can say.
+   A page is 570x770 AUTHORED px (see --pw / --ph) and .face__flat CLIPS
+   rather than scrolls, so every page below is sized to fit rather than to
+   scroll. Two rules follow from that and both are load-bearing:
+
+     1. No vw or vh inside a page. The book is scaled as one piece, and
+        viewport units do not track that scale.
+     2. Measure, do not eyeball. A page that overruns clips silently.
    ============================================================ */
+
+/* position: relative and auto height, both deliberate: .content--art below
+   takes height: 100% off .face__flat's definite box, and a relative parent is
+   what the absolutely-positioned cover art and marginalia hang from. */
+.content { position: relative; z-index: 2; padding: 2.4rem 2rem; }
+
+/* The hinge side of each page needs more room than the fore-edge side, or the
+   first line of text sits in the gutter shadow. Recto hinges on its local
+   left; verso is pre-flipped, so its hinge is on its local right. */
+.face--recto .content { padding-left: 2.9rem; }
+.face--verso .content { padding-right: 2.9rem; }
+
+/* Section titles are set, not written -- only the name stays handwritten, and
+   it is an h1 on the cover alone. The sans needs a tighter line than the
+   script does, hence the two line-heights. */
+.display {
+  font-family: var(--font-body); font-weight: 600;
+  font-size: 2.1rem; line-height: 1.04; letter-spacing: -.015em;
+  margin: 0;
+}
+h1.display {
+  font-family: var(--font-hand); font-weight: 400;
+  font-size: 1.9rem; line-height: 1.38; letter-spacing: 0;
+}
+.kicker {
+  font-family: var(--font-body); font-weight: 500;
+  font-size: .9rem; letter-spacing: .03em; color: var(--ink-soft);
+  margin: .6rem 0 0;
+}
+.lede { max-width: 34ch; color: var(--ink-soft); line-height: 1.6; font-size: .95rem; }
+.hand { font-family: var(--font-loop); }
+
+/* ---------- the cover ----------
+   The landing state, so it has to stand on its own: a name, a role and enough
+   of a note that a five-second visitor learns something before deciding
+   whether to click. */
+.content--cover { height: 100%; }
+/* The role line is LIVE TEXT in a band the cover art leaves clear -- never
+   painted into cover-front.png, so the positioning question can be settled
+   without a repaint. */
+.cover__role {
+  color: #fff; opacity: .92;
+  margin: .9rem 0 0;
+  font-size: .95rem; letter-spacing: .06em; text-transform: uppercase;
+}
+.cover__note {
+  margin: 1rem 0 0; max-width: 26ch;
+  color: #fff; opacity: .84; font-size: .92rem; line-height: 1.5;
+}
+.cover-art {
+  position: absolute; right: 1.5rem; bottom: 0;
+  height: 54%; max-width: 62%; object-fit: contain; object-position: bottom right;
+}
 
 /* The cover can afford its deep top padding; a page carrying a grid cannot.
    This buys back roughly 40px without touching the cover. */
 .content--page {
-  padding-top: clamp(2.2rem, 4.5vh, 3rem);
-  padding-bottom: clamp(1rem, 2.4vh, 2rem);
+  padding-top: 2rem;
+  padding-bottom: 1.4rem;
 }
-/* --page-h is min(560px, 68vh), so a short laptop window shrinks the sheet
-   while a width-only clamp keeps the heading at its full 54px. Experience
-   overran by 23px at 1440x720 because of exactly that. Adding a vh term lets
-   the heading give way with the page; min() keeps whichever of width or
-   height is the real constraint. */
-.content--page .display { font-size: clamp(1.9rem, min(4.8vw, 6.2vh), 3.4rem); }
+.content--page .display { font-size: 2rem; }
 .lede--tight { margin: .45rem 0 0; max-width: 52ch; }
 
 /* Placeholder copy, marked so nothing here can be mistaken for a finished
@@ -544,15 +646,19 @@ kbd {
 .stickersheet {
   list-style: none;
   display: grid;
-  /* Six across, three down -- 18 exactly, no ragged row. Nine columns over
-     two rows left ~150px of bare paper under the grid and made every piece
-     thumbnail-sized; six columns spend that height on the art instead, at
-     roughly 124px a side rather than 79. */
-  grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: clamp(.3rem, .8vh, .5rem) clamp(.35rem, 1vw, .6rem);
-  /* Tighter than the other sheets' content gap: three rows of art need the
+  /* Three across, three down -- NINE a page, because the eighteen pieces are
+     split across the two halves of the Art spread now rather than filling one
+     wide sheet. Six columns was right when a sheet was 950px wide; on a 570px
+     page it made every piece an 85x200 sliver and cropped the art to ribbons.
+     Three columns on this page is roughly 170x210 a piece, which is close to
+     the proportions the work is actually drawn at. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* rem, not vh/vw: the whole book is scaled as one piece, and viewport units
+     do not track that scale. */
+  gap: .45rem .5rem;
+  /* Tighter than the other pages' content gap: three rows of art need the
      height more than the heading needs the air. */
-  margin: clamp(.6rem, 1.6vh, 1rem) 0 0;
+  margin: .9rem 0 0;
   padding: 0;
 }
 .art-piece {
@@ -716,32 +822,9 @@ kbd {
   color: var(--ink-soft);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .sheet, .sheet__flutter { transition-duration: 1ms; }
-  .sheet:hover .sheet__flutter { animation: none; }
-}
 @media (max-width: 700px) {
-  .masthead { flex-direction: column; gap: .5rem; }
-  .nav ul { flex-wrap: wrap; }
-  /* Raised from min(520px, 60vh). The content pages need the room: Experience
-     overran a 487px sheet by 83px at 375x812, and deleting the role notes to
-     fit would have cost the phone reader the only line explaining each job.
-     At 70vh the masthead, page and hint still clear an iPhone SE's 667px. */
-  .journal-viewport { height: min(600px, 70vh); }
   .cover-art { height: 58%; opacity: .9; }
 
-  /* Flat paper on phones. The bend is 60 bands nested six deep, each its own
-     backface-hidden 3D layer, and that is what mobile WebKit mis-sorts -- it
-     painted the cover's cream back face over the mauve front, and re-sorted
-     mid-turn it left text jagged and clipped. Dropping the rotation collapses
-     the chain into one flat sheet with no DOM change, and with the subtree
-     flat .face's own backface-visibility culls it properly: the ordinary
-     flip-card arrangement. The curve is no loss at this size -- 400ms into a
-     turn the page is edge-on and the lede measures 8px tall. */
-  .face        { transform-style: flat; }
-  .bend, .band { transform: none; transform-style: flat; backface-visibility: visible; }
-  .band::after { display: none; }   /* curl shading, with no curl to shade */
-  .face__flat  { transform: none; } /* no curling bands left to clear */
 
   /* The sheet is min(520px, 60vh) here -- roughly 380px of usable height on a
      375x812 phone -- and .face__flat still clips. Every grid below is retuned
@@ -751,17 +834,12 @@ kbd {
   .plate__shot   { height: 56px; }
   .plate::before { width: 42px; height: 14px; }
 
-  /* Six columns leaves a 50px plate at this width, which is smaller than the
-     thumbnails were ever meant to be. Four wider ones over five rows fit the
-     same eighteen pieces into less height. */
-  /* Five across, four down. Six columns on a 311px sheet is a 48px piece;
-     five gives it 58px and the last row simply runs three short. */
-  /* Four across, five down. Five columns on a 311px sheet gave a 48px-wide
-     piece, which with the full height to fill came out as a sliver; four
-     gives it 68px. The last row runs two short, and a ragged row of taped
-     photos is what a real page looks like anyway. */
-  .stickersheet    { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .35rem; }
-  .content--art .stickersheet { grid-template-rows: repeat(5, minmax(0, 1fr)); }
+  /* The column counts that used to live here (six, then five, then four) were
+     all for ONE sheet carrying all eighteen pieces. The spread splits them
+     nine and nine, so 3x3 is already the right shape and only the gap and the
+     tape need to come down at this size. Phones get a flat page of their own
+     in any case -- this query is a holding position until that lands. */
+  .stickersheet    { gap: .35rem; }
   .art-piece       { padding: 3px; }
   /* Tape scaled to the smaller piece, or it covers the art. */
   .art-piece::before, .art-piece::after { width: 17px; height: 7px; }
