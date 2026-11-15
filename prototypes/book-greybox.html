@@ -59,6 +59,15 @@ body {
   font-weight: 600; letter-spacing: .02em;
 }
 .bar__where { font-weight: 400; opacity: .7; margin-left: auto; font-variant-numeric: tabular-nums; }
+/* The only way back to the cover. Without it the cover is reachable only by
+   Back or the left arrow -- and the cover is the best-looking thing here, so
+   nothing pointing at it is a real gap. Logo-goes-home is also what everyone
+   already expects. */
+.bar__home {
+  font: inherit; font-weight: 700; color: inherit;
+  background: none; border: 0; padding: 0; cursor: pointer;
+}
+.bar__home:hover { text-decoration: underline; }
 
 /* ---------- stage ---------- */
 .stage {
@@ -164,6 +173,22 @@ body {
   font-size: .75rem; opacity: .5; text-align: center; padding: .5rem;
 }
 .face--board .fill { border-color: rgba(255,255,255,.3); }
+
+/* The role line is live text in a band left clear by the cover art. Dashed
+   here only to make the reserved area visible in the greybox. */
+.cover__role {
+  border: 1px dashed rgba(255,255,255,.45);
+  border-radius: 3px;
+  padding: .3em .5em;
+  margin: .5rem 0 0;
+}
+.cover__note {
+  margin: .7rem 0 0;
+  font-size: .82rem;
+  line-height: 1.45;
+  opacity: .78;
+  max-width: 26ch;
+}
 
 /* ---------- thickness ----------
    The page block under each half. Without it the open book is two rectangles
@@ -274,7 +299,7 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
 <body>
 
 <div class="bar">
-  <span>Uju Duru</span>
+  <button type="button" class="bar__home" id="home">Uju Duru</button>
   <span class="bar__where" id="where"></span>
 </div>
 
@@ -291,10 +316,17 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
     <div class="block block--r"></div>
 
     <div class="leaf leaf--cover" data-leaf="0">
+      <!-- The cover is the landing state, so it has to stand on its own: a
+           name, a role, and enough of a note that a 5-second visitor learns
+           something before deciding whether to click. The role line is LIVE
+           TEXT in a clear band, never painted into the cover art, so the
+           positioning question can be settled without a repaint. -->
       <div class="face face--recto face--board">
         <h2>Uju Duru</h2>
-        <p class="sub">UX / Design Engineer</p>
-        <div class="fill">FRONT COVER<br>cover art + About Me</div>
+        <p class="sub cover__role">UX / Design Engineer</p>
+        <p class="cover__note">a short note — one or two lines, the thing
+           someone should know before they open it</p>
+        <div class="fill">COVER ART</div>
         <div class="sheen"></div>
       </div>
       <div class="face face--verso">
@@ -357,7 +389,7 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
   <div class="tabs" id="tabs"></div>
 </div>
 
-<p class="hint">Click the book, or <kbd>&larr;</kbd> <kbd>&rarr;</kbd>, or scroll. Tabs jump.</p>
+<p class="hint">Click the book, or <kbd>&larr;</kbd> <kbd>&rarr;</kbd>, or scroll. Tabs jump. Click away to shut it.</p>
 
 <script>
 (function () {
@@ -536,6 +568,7 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
   function goTo(i, push) {
     i = Math.max(0, Math.min(i, N));
     if (i === index) return;
+    stage.classList.remove('is-booting');
     index = i;
     book.classList.remove('is-fresh');
     layout(true);
@@ -547,6 +580,22 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
   }
 
   /* tabs */
+  document.getElementById('home').addEventListener('click', function () {
+    goTo(0);
+  });
+
+  /* Click the surface around the book to shut it. The book sits on a desk, so
+     clicking the desk putting it down is the behaviour people already expect
+     -- and it means getting out never requires finding a control.
+     Checked against #bookpos rather than #book: a click on the book itself
+     bubbles up to here, and without this the book would turn a page AND close
+     on the same click. .tabs lives inside the stage too, so it is excluded as
+     well, or jumping to a section would immediately undo itself. */
+  document.querySelector('.stage').addEventListener('click', function (e) {
+    if (e.target.closest('#bookpos, #tabs')) return;
+    goTo(0);
+  });
+
   ROUTES.forEach(function (r, k) {
     if (!r) return;                       // no tab for the cover
     var b = document.createElement('button');
@@ -626,10 +675,16 @@ kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius:
   requestAnimationFrame(remeasure);
   window.addEventListener('load', remeasure);
 
-  /* Two frames: one for the pose above to be computed, one for it to paint. */
-  requestAnimationFrame(function () {
-    requestAnimationFrame(function () { stage.classList.remove('is-booting'); });
-  });
+  /* Two frames: one for the pose above to be computed, one for it to paint.
+     Belt and braces, because requestAnimationFrame does not run in a
+     backgrounded tab -- and if it never fires, is-booting never clears and
+     the book's approach and stand-up stay suppressed for the whole session.
+     Page turns would still animate (those are Web Animations, not CSS
+     transitions), so it fails silently and looks like the book is snapping
+     open rather than like something is broken. */
+  function booted() { stage.classList.remove('is-booting'); }
+  requestAnimationFrame(function () { requestAnimationFrame(booted); });
+  setTimeout(booted, 120);
 
   window.bookState = function () { return { index: index, route: ROUTES[index] }; };
 }());

@@ -208,6 +208,21 @@ table in the plan.
 UX-Engineer-vs-software-engineering question can be settled later without
 repainting a cover. Leave that band genuinely clear.
 
+**The cover also carries a short note**, one or two lines. It is the landing
+state now, so it has to stand on its own: a visitor who leaves after five
+seconds should still have learned something. Title and role alone make it a
+splash screen.
+
+### Getting back to the cover
+
+The cover has no tab, so without this it is reachable only by Back or the left
+arrow — and it is the best-looking thing on the site. Two ways in:
+
+- **The wordmark in the bar** returns to the cover from anywhere.
+- **Clicking the surface around the book** shuts it. The book sits on a desk;
+  clicking the desk puts it down. It means getting out never requires finding
+  a control.
+
 ### New drawn asset
 
 | Asset | Size | Opaque? | Notes |
