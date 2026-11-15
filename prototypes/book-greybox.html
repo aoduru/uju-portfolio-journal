@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Book greybox — motion test</title>
+<style>
+/* ============================================================
+   GREYBOX. Throwaway.
+   Testing one thing only: does a side-bound CSS 3D book feel right
+   to open, turn and navigate? No art, no palette, no content.
+   If the motion is wrong, we find out here and not after a rebuild.
+   ============================================================ */
+* { box-sizing: border-box; }
+
+:root {
+  --pw: min(370px, 40vw);      /* one page */
+  --ph: min(500px, 58vh);
+  --lift: 2px;                 /* z-separation per leaf in a pile */
+  /* Opening is one gesture, not two. The book comes at you WHILE the page
+     turns -- that simultaneity is the whole character of it and must not be
+     taken away. But "coming at you" is really two different movements that
+     were sharing one transform, and only one of them caused trouble:
+
+       --approach  scale + slide. The book getting bigger and nearer. This is
+                   the good part. Runs the full length of the turn.
+       --standup   rotateX, the book tilting from flat-on-the-desk up to a
+                   reading angle. Rotating the book towards the viewer while
+                   the cover is mid-flip makes the cover GROW as it turns,
+                   and a cover that grows reads as a cover coming back. So
+                   this one is short and early, finished before the cover is
+                   halfway over.
+
+     Splitting them keeps the approach overlapping the turn and gets the
+     looming out of the way. Kept in sync with the script, which can override
+     all of them from the query string. */
+  --approach: 620ms;
+  --standup: 280ms;
+  --turn: 620ms;
+  --posedelay: 0ms;
+  --ink: #2a2a2e;
+}
+
+html, body { height: 100%; margin: 0; }
+body {
+  font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, sans-serif;
+  color: var(--ink);
+  background: #9aa5ac;         /* grey stand-in for the slate blue-grey */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---------- chrome ---------- */
+.bar {
+  flex: none;
+  display: flex; align-items: center; gap: 1rem;
+  padding: .9rem 1.4rem;
+  font-weight: 600; letter-spacing: .02em;
+}
+.bar__where { font-weight: 400; opacity: .7; margin-left: auto; font-variant-numeric: tabular-nums; }
+
+/* ---------- stage ---------- */
+.stage {
+  flex: 1 1 auto;
+  position: relative;
+  display: grid;
+  place-items: center;
+  perspective: 2400px;
+  perspective-origin: 50% 42%;
+}
+
+/* The book is always TWO pages wide; the spine sits at its centre.
+   When the book is shut everything is stacked on one side, so the
+   whole thing slides half a page to keep the visible object centred.
+
+   Two nested elements, because the approach and the stand-up need separate
+   timing (see --approach / --standup above). Nesting composes to exactly the
+   same matrix as the single `scale translateX rotateX` this replaced: the
+   parent's transform applies first, then the child's. */
+.book-pos {
+  position: relative;
+  transform-style: preserve-3d;
+  /* scale FIRST, so the half-page shift is scaled with it and the book cannot
+     drift sideways mid-transition. The scale is what makes an open spread
+     readable: shut, the book is small and invitingly far away; opened, it
+     comes to you. --scale is computed against the stage in JS rather than
+     hard-coded, so a big monitor gets a big book. It is a transform, not a
+     width change, so it composites and the spread's layout is identical in
+     both states. */
+  transform:
+    scale(var(--scale, 1))
+    translateX(calc(var(--shift, -1) * var(--pw) / 2));
+  /* Deliberately the same duration as the page turn: these two run together
+     for their whole length. That is the gesture. */
+  transition: transform var(--approach) cubic-bezier(.25,.62,.35,1) var(--posedelay);
+}
+.book {
+  position: relative;
+  width: calc(var(--pw) * 2);
+  height: var(--ph);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt, 52deg));
+  /* Short and front-loaded, and over well before the cover reaches 90deg.
+     This is the single component that was making the cover loom mid-turn. */
+  transition: transform var(--standup) cubic-bezier(.2,.8,.3,1) var(--posedelay);
+}
+
+/* Shut, lying on the surface: steep tilt, reads as flat on a desk.
+   Open: comes up to a reading angle. This one transform is most of
+   what sells "it got picked up". */
+.book.is-open { --tilt: 10deg; }
+
+/* ---------- a leaf ----------
+   Hinged on its LEFT edge, which is the spine at the book's centre.
+   rotateY(0) rests it on the right half, rotateY(-180deg) on the left. */
+.leaf {
+  position: absolute;
+  top: 0; left: 50%;
+  width: var(--pw); height: var(--ph);
+  transform-origin: left center;
+  transform-style: preserve-3d;
+}
+.face {
+  position: absolute; inset: 0;
+  backface-visibility: hidden;
+  border-radius: 2px 7px 7px 2px;
+  background-color: #e9e6e1;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.09);
+  display: flex; flex-direction: column;
+  padding: 1.4rem 1.2rem;
+}
+/* The back of a leaf is the same surface seen from behind, so it is
+   pre-flipped. That flip also swaps its local left and right: a turned
+   leaf's hinge ends up on the verso's local RIGHT, which is why the two
+   gutter gradients below run in opposite directions. */
+.face--verso { transform: rotateY(180deg); border-radius: 7px 2px 2px 7px; }
+
+/* The gutter. Paper does not meet the spine flat -- it dips, and that dip is
+   most of what tells you these two pages belong to ONE book rather than being
+   two cards side by side. Painted onto the hinge edge of each face, so it
+   needs no extra element and cannot fall out of sync with the geometry. */
+.face--recto { background-image: linear-gradient(90deg,  rgba(0,0,0,.20), rgba(0,0,0,0) 11%); }
+.face--verso { background-image: linear-gradient(270deg, rgba(0,0,0,.20), rgba(0,0,0,0) 11%); }
+
+/* Board, not paper: only the two EXTERIOR cover faces. The inside of the
+   front cover is a pasted endpaper and the inside of the back cover is an
+   ordinary page -- both are paper, which is why the Case Studies spread
+   should not have one grey half. */
+.face--board {
+  background-color: #7d7a77; color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,.2);
+  border-radius: 3px 9px 9px 3px;
+}
+.face--board.face--verso { border-radius: 9px 3px 3px 9px; }
+
+.face h2 { margin: 0 0 .2rem; font-size: 1.15rem; }
+.face .sub { margin: 0; font-size: .8rem; opacity: .6; }
+.face .fill {
+  margin-top: 1rem; flex: 1;
+  border: 1px dashed rgba(0,0,0,.22);
+  border-radius: 4px;
+  display: grid; place-items: center;
+  font-size: .75rem; opacity: .5; text-align: center; padding: .5rem;
+}
+.face--board .fill { border-color: rgba(255,255,255,.3); }
+
+/* ---------- thickness ----------
+   The page block under each half. Without it the open book is two rectangles
+   lying on a colour; with it there is an object on a surface. Sits a hair
+   BELOW the top page (negative Z) and is offset down-screen, which at this
+   tilt reads as depth. */
+.block {
+  position: absolute; top: 0; height: var(--ph); width: var(--pw);
+  transform: translateZ(-1px);
+  border-radius: 2px 7px 7px 2px;
+  background: #d6d1ca;
+  box-shadow:
+      0 1px 0 #cdc7bf, 0 2px 0 #e4dfd8, 0 3px 0 #cdc7bf,
+      0 4px 0 #e4dfd8, 0 5px 0 #c6c0b7, 0 7px 10px rgba(0,0,0,.3);
+}
+.block--r { left: 50%; }
+.block--l { left: 0; border-radius: 7px 2px 2px 7px; }
+/* A shut book has a block on ONE side only -- whichever side the leaves are
+   stacked on. Hiding by open/closed alone left the right-hand block sitting
+   out on its own next to the shut back cover, like a slab of paper with no
+   book attached to it.
+   The side that gains a block gains it MID-TURN, not at the click: flipped at
+   the click, a full page-sized slab materialises on the empty side before the
+   cover has moved, and that pop is what read as "a white page turning". It is
+   scheduled for the instant the leaf passes 90deg, when the leaf is directly
+   overhead and hides the change -- which is also when it becomes true.
+   visibility, not opacity -- opacity below 1 forces transform-style back to
+   flat, and that is the exact trap the spiral build kept falling into. */
+.book.is-shut-front .block--l { visibility: hidden; }
+.book.is-shut-back  .block--r { visibility: hidden; }
+
+/* ---------- the shut book invites a click ---------- */
+.sheen {
+  position: absolute; inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(105deg,
+      transparent 38%, rgba(255,255,255,.26) 50%, transparent 62%);
+  background-size: 300% 100%;
+  background-position: var(--sheen, 120%) 0;
+  pointer-events: none;
+}
+.book:not(.is-open) { cursor: pointer; }
+@media (hover: hover) and (pointer: fine) {
+  .book:not(.is-open):hover { --tilt: 47deg; }
+}
+/* Before the first interaction, a slow sweep every few seconds. */
+@keyframes idlesheen {
+  0%, 62% { background-position: 120% 0; }
+  88%     { background-position: -40% 0; }
+  100%    { background-position: -40% 0; }
+}
+.book.is-fresh .sheen { animation: idlesheen 4.2s ease-in-out infinite; }
+
+/* ---------- the ground ---------- */
+.shadow {
+  position: absolute; left: 50%; top: 50%;
+  width: calc(var(--pw) * 2); height: calc(var(--ph) * .34);
+  /* Pulled up under the book's lower edge. Sitting it at the stage centre
+     left a detached smudge well below the object, which reads as hovering
+     rather than resting -- the one thing the shadow exists to prevent. */
+  /* --shy differs by state because the book stands up as it opens: shut and
+     tilted back, its footprint is much lower on screen than when open. */
+  /* Same --scale as the book, or the shadow stays the size of a small shut
+     book while a large open one floats above it. */
+  transform: translate(-50%, var(--shy, 96%)) scale(var(--scale, 1)) scaleX(var(--shsc, .55));
+  background: radial-gradient(ellipse at center, rgba(0,0,0,.4), transparent 68%);
+  filter: blur(11px);
+  transition: transform var(--approach) cubic-bezier(.25,.62,.35,1) var(--posedelay);
+  pointer-events: none;
+}
+
+/* ---------- tabs ---------- */
+.tabs {
+  position: absolute; top: 50%; right: max(2vw, 14px);
+  transform: translateY(-50%);
+  display: grid; gap: 7px;
+}
+.tabs button {
+  font: inherit; font-size: .76rem; font-weight: 600;
+  padding: .5rem .7rem;
+  border: 0; border-radius: 3px 7px 7px 3px;
+  background: #cfcac3; color: #35332f;
+  cursor: pointer; text-align: left;
+  box-shadow: 1px 1px 0 rgba(0,0,0,.18);
+}
+.tabs button[aria-current="true"] { background: #f0ece6; box-shadow: 2px 2px 0 rgba(0,0,0,.22); }
+
+.hint {
+  flex: none; text-align: center; padding: .6rem; font-size: .8rem; opacity: .72;
+}
+kbd { border: 1px solid rgba(0,0,0,.3); border-bottom-width: 2px; border-radius: 3px; padding: 0 .3em; }
+
+/* The pose is set from JS, so on a cold load the element's first computed
+   transform uses the shut fallbacks and the real values arrive a tick later
+   -- which starts a transition the moment the page appears. Deep-linking to
+   #art should put you AT the Art spread, not play the book opening at you.
+   Suppressed for the first two frames, then released. */
+.stage.is-booting .book,
+.stage.is-booting .book-pos,
+.stage.is-booting .shadow { transition: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .book, .book-pos, .shadow { transition: none; }
+  .book.is-fresh .sheen { animation: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <span>Uju Duru</span>
+  <span class="bar__where" id="where"></span>
+</div>
+
+<div class="stage is-booting">
+  <div class="shadow" id="shadow"></div>
+
+  <div class="book-pos" id="bookpos">
+  <div class="book is-fresh" id="book">
+    <!-- 4 leaves, 5 states. The inside of the front cover is the LEFT page of
+         Case Studies, and the inside of the back cover is the RIGHT page of
+         Art -- which is exactly how a real book works. -->
+
+    <div class="block block--l"></div>
+    <div class="block block--r"></div>
+
+    <div class="leaf leaf--cover" data-leaf="0">
+      <div class="face face--recto face--board">
+        <h2>Uju Duru</h2>
+        <p class="sub">UX / Design Engineer</p>
+        <div class="fill">FRONT COVER<br>cover art + About Me</div>
+        <div class="sheen"></div>
+      </div>
+      <div class="face face--verso">
+        <h2>Case Studies</h2><p class="sub">left page</p>
+        <div class="fill">2 taped cards</div>
+      </div>
+    </div>
+
+    <div class="leaf" data-leaf="1">
+      <div class="face face--recto">
+        <h2>Case Studies</h2><p class="sub">right page</p>
+        <div class="fill">2 taped cards</div>
+      </div>
+      <div class="face face--verso">
+        <h2>Experience</h2><p class="sub">left page</p>
+        <div class="fill">washi timeline<br>+ star stickers</div>
+      </div>
+    </div>
+
+    <div class="leaf" data-leaf="2">
+      <div class="face face--recto">
+        <h2>Skills</h2><p class="sub">right page</p>
+        <div class="fill">skill groups</div>
+      </div>
+      <div class="face face--verso">
+        <h2>Art</h2><p class="sub">left page</p>
+        <div class="fill">grid</div>
+      </div>
+    </div>
+
+    <div class="leaf leaf--cover" data-leaf="3">
+      <div class="face face--recto">
+        <h2>Art</h2><p class="sub">right page — inside back cover</p>
+        <div class="fill">grid</div>
+      </div>
+      <div class="face face--verso face--board">
+        <h2>Contact</h2>
+        <p class="sub">back cover</p>
+        <div class="fill">BACK COVER<br>you reach this by closing the book</div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<p class="hint">Click the book, or <kbd>&larr;</kbd> <kbd>&rarr;</kbd>, or scroll. Tabs jump.</p>
+
+<script>
+(function () {
+  'use strict';
+
+  var book   = document.getElementById('book');
+  var shadow = document.getElementById('shadow');
+  var where  = document.getElementById('where');
+  var stage  = document.querySelector('.stage');
+  var leaves = [].slice.call(book.querySelectorAll('.leaf'));
+  var N      = leaves.length;                       // 4 leaves
+  var ROUTES = ['about', 'case-studies', 'experience', 'art', 'contact'];
+  var LABELS = ['About', 'Case Studies', 'Experience', 'Art', 'Contact'];
+  var LIFT   = 2;    // px between leaves in a pile
+  var ARC    = 26;   // how far the turning leaf rises out of the stack
+  /* APPROACH and TURN are the same length on purpose -- they run together for
+     the whole gesture. STANDUP is short so the tilt is done early. LEAD is a
+     head start for the book and defaults to none: the looming is handled by
+     the split, so the two can start on the same frame. SETTLE is the mirror
+     on the way out -- the page lands, then the book goes back down.
+     All dialled from the query string by feel:
+     ?approach=620&standup=280&turn=620&lead=0&settle=200 */
+  var Q = new URLSearchParams(location.search);
+  function q(k, d) { var v = parseInt(Q.get(k), 10); return isNaN(v) ? d : v; }
+  /* A jump of more than one spread riffles: the leaves leave in succession
+     rather than in lockstep, several in the air at once. Turned together they
+     read as one thick slab, and a slab flipping once is over as fast as a
+     single page -- which is why About -> Contact felt instant despite moving
+     four leaves. ARC_STEP lifts each successive leaf higher than the last, so
+     overlapping leaves cannot z-fight at their apexes and they land in the
+     right order on the pile. */
+  var STAGGER  = q('stagger', 120);
+  var ARC_STEP = q('arcstep', 9);
+  var APPROACH = q('approach', 620);
+  var STANDUP  = q('standup', 280);
+  var TURN     = q('turn', 620);
+  var LEAD     = q('lead', 0);
+  var SETTLE   = q('settle', 200);
+
+  var index = 0;     // how many leaves are turned. 0..N  -> N+1 states
+  var REDUCED = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* How big the OPEN book gets. Measured against the stage rather than fixed,
+     so a 27" monitor gets a genuinely large spread and a laptop gets what it
+     can fit. offsetWidth/Height are layout sizes, untouched by the transform,
+     so this cannot feed back on itself. The gutter reserves room for the tab
+     column on the right and keeps the book optically centred. */
+  var TAB_GUTTER = 150;
+  function fitScale() {
+    var r  = stage.getBoundingClientRect();
+    var pw = book.offsetWidth / 2;          // the element is two pages wide
+    var ph = book.offsetHeight;
+    var k  = Math.min((r.width - TAB_GUTTER * 2) / (pw * 2), (r.height * .94) / ph);
+    return Math.round(Math.max(.9, Math.min(k, 2.4)) * 1000) / 1000;
+  }
+
+  /* z-index is IGNORED inside preserve-3d -- depth decides paint order AND
+     hit-testing. That bit the spiral build hard, so ordering here is done
+     entirely with translateZ and never with z-index. */
+  function zFor(i, turned) {
+    return turned ? i * LIFT             // left pile: last turned sits on top
+                  : (N - 1 - i) * LIFT;  // right pile: next to turn on top
+  }
+  function tf(i, turned) {
+    return 'translateZ(' + zFor(i, turned) + 'px) rotateY(' + (turned ? -180 : 0) + 'deg)';
+  }
+
+  var posedShut   = true;   // what the book's pose currently is
+  var blockTimers = [];
+
+  function layout(animate) {
+    var shut    = (index === 0 || index === N);
+    var turning = leaves.some(function (l, i) {
+      return (l.dataset.turned === 'true') !== (i < index);
+    });
+    var moving  = (animate !== false) && turning && !REDUCED;
+
+    /* Simultaneous. Opening: the book and the page leave together (LEAD is a
+       tunable head start, zero by default). Closing: the page lands first and
+       the book follows it down. Turning between two open spreads changes no
+       pose at all, so both are zero and it is a single movement either way. */
+    var leafDelay = (moving && posedShut && !shut) ? LEAD   : 0;
+    var poseDelay = (moving && !posedShut && shut) ? SETTLE : 0;
+
+    /* Which leaves move, in the order they leave. Forwards, the front cover
+       goes first; backwards, the leaf nearest the spine on the left goes
+       first. A leaf that is becoming turned tells us which way we are going
+       without having to remember the previous index. */
+    var order = {};
+    var queue = [];
+    leaves.forEach(function (l, i) {
+      if ((l.dataset.turned === 'true') !== (i < index)) queue.push(i);
+    });
+    var forward = queue.length ? (queue[0] < index) : true;
+    if (!forward) queue.reverse();
+    queue.forEach(function (i, k) { order[i] = k; });
+
+    leaves.forEach(function (leaf, i) {
+      var turned = i < index;
+      var was    = leaf.dataset.turned === 'true';
+      var to     = tf(i, turned);
+      var k      = order[i] || 0;
+
+      if (animate !== false && was !== turned) {
+        /* Three keyframes, not two. A straight interpolation drags the leaf
+           THROUGH the other pile; the middle frame lifts it clear, which is
+           also what makes the turn read as paper rather than as a hinge. */
+        var top = Math.max(zFor(i, true), zFor(i, false)) + ARC + k * ARC_STEP;
+        /* Easing goes on the SEGMENTS, not on the animation. One easing
+           across the whole thing moves the 50% keyframe off the 50% mark in
+           time -- measured, the leaf hit 90deg at ~230ms of 760 and then took
+           the remaining 530ms to lower the last 90deg. It whipped, then
+           crept, and the creep read as a second page coming down. Linear
+           overall puts edge-on at exactly half time; the two curves give the
+           lift and the landing their own shapes. */
+        leaf.animate([
+          { transform: tf(i, was), easing: 'cubic-bezier(.45,0,.75,.5)' },
+          { transform: 'translateZ(' + top + 'px) rotateY(-90deg)', offset: .5,
+            easing: 'cubic-bezier(.25,.5,.55,1)' },
+          { transform: to }
+        ], { duration: TURN, delay: leafDelay + k * STAGGER,
+             easing: 'linear', fill: 'backwards' });
+      }
+      leaf.style.transform = to;
+      leaf.dataset.turned  = String(turned);
+    });
+
+    book.classList.toggle('is-open', !shut);
+
+    /* Blocks flip at a crossover, mid-turn -- see the stylesheet. Each side's
+       flag belongs to one specific leaf: the left block appears or vanishes
+       when the FRONT cover passes 90deg, the right one when the BACK cover
+       does. In a riffle those are different moments, so they get their own
+       timers rather than one shared with whatever leaf happened to be last. */
+    blockTimers.forEach(clearTimeout);
+    blockTimers.length = 0;
+    function cross(i) { return leafDelay + (order[i] || 0) * STAGGER + TURN * 0.5; }
+    function flip(cls, on, i) {
+      if (moving && (i in order)) {
+        blockTimers.push(setTimeout(function () {
+          book.classList.toggle(cls, on);
+        }, cross(i)));
+      } else {
+        book.classList.toggle(cls, on);
+      }
+    }
+    flip('is-shut-front', index === 0, 0);
+    flip('is-shut-back',  index === N, N - 1);
+    /* Shut on the front -> everything is stacked right, so slide left to
+       centre it. Shut on the back -> stacked left, slide right. */
+    /* On the STAGE, not on .book -- the slide now lives on .book-pos, which is
+       .book's parent, and custom properties only cascade downwards. */
+    stage.style.setProperty('--shift', index === 0 ? -1 : (index === N ? 1 : 0));
+    shadow.style.setProperty('--shsc', shut ? .55 : 1);
+    shadow.style.setProperty('--shy',  shut ? '68%' : '52%');
+    /* Set on the stage so the book and its shadow both inherit one value. */
+    stage.style.setProperty('--scale', shut ? 1 : fitScale());
+    stage.style.setProperty('--posedelay', poseDelay + 'ms');
+    /* The book's own move spans the WHOLE riffle, however many leaves are in
+       it. Left at a fixed length it finished 360ms before the last page
+       landed on a four-leaf jump -- the book arriving while pages are still
+       in the air is the same desync that made the open feel wrong. */
+    var span = queue.length > 1 ? (queue.length - 1) * STAGGER : 0;
+    stage.style.setProperty('--approach', (APPROACH + span) + 'ms');
+    stage.style.setProperty('--standup', STANDUP + 'ms');
+    posedShut = shut;
+
+    where.textContent = LABELS[index] + '  ·  ' + (index + 1) + ' / ' + (N + 1);
+    [].forEach.call(document.querySelectorAll('.tabs button'), function (b, k) {
+      b.setAttribute('aria-current', String(k === index));
+    });
+  }
+
+  function goTo(i, push) {
+    i = Math.max(0, Math.min(i, N));
+    if (i === index) return;
+    index = i;
+    book.classList.remove('is-fresh');
+    layout(true);
+    if (push !== false && history.pushState) {
+      history.pushState({ i: index }, '', '#' + ROUTES[index]);
+    }
+  }
+
+  /* tabs */
+  ROUTES.forEach(function (r, k) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = LABELS[k];
+    b.addEventListener('click', function () { goTo(k); });
+    document.getElementById('tabs').appendChild(b);
+  });
+
+  book.addEventListener('click', function () { goTo(index + 1); });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  goTo(index + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    goTo(index - 1);
+  });
+
+  /* The open size is viewport-dependent, so it has to be recomputed when the
+     window changes -- otherwise dragging a window smaller leaves the spread
+     overflowing. Observe the stage itself rather than listening for resize,
+     which misses everything else that changes the box. */
+  if (window.ResizeObserver) {
+    new ResizeObserver(function () {
+      if (book.classList.contains('is-open')) {
+        stage.style.setProperty('--scale', fitScale());
+      }
+    }).observe(stage);
+  }
+
+  var acc = 0, lock = false;
+  stage.addEventListener('wheel', function (e) {
+    if (lock) return;
+    acc += e.deltaY;
+    if (Math.abs(acc) > 110) {
+      goTo(index + (acc > 0 ? 1 : -1));
+      acc = 0; lock = true;
+      setTimeout(function () { lock = false; }, TURN - 100);
+    }
+  }, { passive: true });
+
+  window.addEventListener('popstate', function (e) {
+    var i = (e.state && typeof e.state.i === 'number')
+          ? e.state.i : ROUTES.indexOf((location.hash || '').slice(1));
+    if (i < 0) i = 0;
+    index = i; layout(true);
+  });
+
+  /* Belt and braces, same as the spiral engine: a hash typed into the bar, or
+     a plain fragment link, does not reliably reach the popstate handler. */
+  window.addEventListener('hashchange', function () {
+    var i = ROUTES.indexOf((location.hash || '').slice(1));
+    if (i < 0 || i === index) return;
+    index = i;
+    book.classList.remove('is-fresh');
+    layout(true);
+  });
+
+  var start = ROUTES.indexOf((location.hash || '').slice(1));
+  if (start > 0) { index = start; book.classList.remove('is-fresh'); }
+  layout(false);
+
+  /* Deep-linking straight to an open spread measured the stage before it had
+     settled, so fitScale() sometimes came back at the 0.9 floor and the book
+     loaded at shut size while claiming to be open. Re-measure once the frame
+     and then the load have gone by; the ResizeObserver only fires on a size
+     CHANGE, so it never caught this. */
+  function remeasure() {
+    if (book.classList.contains('is-open')) {
+      stage.style.setProperty('--scale', fitScale());
+    }
+  }
+  requestAnimationFrame(remeasure);
+  window.addEventListener('load', remeasure);
+
+  /* Two frames: one for the pose above to be computed, one for it to paint. */
+  requestAnimationFrame(function () {
+    requestAnimationFrame(function () { stage.classList.remove('is-booting'); });
+  });
+
+  window.bookState = function () { return { index: index, route: ROUTES[index] }; };
+}());
+</script>
+</body>
+</html>
