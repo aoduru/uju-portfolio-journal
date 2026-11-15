@@ -88,6 +88,24 @@
     if (parts[1]) card.openBySlug(parts[0], parts[1], { animate: false });
   }
 
+  /* ---------- deep link while already here ----------
+     The block above only runs at load, and the card's own popstate handler
+     only runs on Back and Forward, so pasting "#art/<slug>" into the bar of a
+     page that is ALREADY open moved the book and left the card shut. The
+     engine has its own hashchange listener for the spread; this is the other
+     half of that address.
+
+     The hash is already what it should be, so the open must not push again --
+     that is what { push: false } is for, and it is the same call the popstate
+     path makes for the same reason. */
+  window.addEventListener('hashchange', function () {
+    var parts = (location.hash || '').slice(1).split('/');
+    var slug  = parts[1];
+    if (!slug) { if (card.isOpen()) card.close(); return; }
+    if (card.isOpen() && card.key === parts[0] + '/' + slug) return;
+    card.openBySlug(parts[0], slug, { push: false });
+  });
+
   /* Deep-linking straight to an open spread measured the stage before it had
      settled, so the fit sometimes came back at the floor and the book loaded at
      shut size while claiming to be open. Re-measure once the frame and then the

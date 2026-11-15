@@ -799,6 +799,14 @@ h1.display {
      the overrun comes straight back. */
   min-height: 0;
   grid-template-rows: repeat(3, minmax(0, 1fr));
+  /* Room for the bottom row's TAPE. .art-piece::after is pinned at bottom:-3px
+     and hangs outside its piece, which costs the page 6px of scroll height and
+     clipped the tails on the last row. It has to be padding on this element,
+     not margin above it or padding on the page: the sheet is flex:1, so any
+     space given to a sibling is handed straight back to the grid and the
+     overhang returns. Padding is inside the flex item, so the three rows
+     shrink by 2px each and the tails get their room. */
+  padding-bottom: 6px;
 }
 .content--art .stickersheet li { min-height: 0; }
 .content--art .art-piece       { display: block; height: 100%; }

@@ -376,9 +376,23 @@
        told what a card is -- the owner passes a predicate, and this file stays
        ignorant of content as advertised above. */
     document.addEventListener('keydown', function (e) {
+      /* blocked() is not enough on its own for a key the card also handles.
+         Both listeners sit on document, and the card's runs first and closes
+         SYNCHRONOUSLY -- so by the time this one asks whether a card is open,
+         the answer has already flipped to no and one Escape would close the
+         card and shut the book together. The card marks what it consumed with
+         preventDefault, so that is what gets honoured here. */
+      if (e.defaultPrevented) return;
       if (self.opts.blocked && self.opts.blocked()) return;
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') self.next();
       if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   self.prev();
+      /* Escape shuts the book, the same thing clicking the surface does.
+         The blocked() guard above is what gives it the right precedence
+         without either file knowing about the other: while a card is up the
+         engine ignores Escape entirely and the card's own handler takes it,
+         so one press closes the card and a second shuts the book. Guarded on
+         index so Escape on an already-shut book does not push history. */
+      if (e.key === 'Escape' && self.index !== 0) { self.goTo(0); e.preventDefault(); }
     });
 
     global.addEventListener('popstate', function (e) {
